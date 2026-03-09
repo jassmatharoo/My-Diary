@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>My Daily Diary</title>
+  <meta name="theme-color" content="#a21caf" />
+  <style>
+    :root {
+      --bg: #f5f3ff;
+      --surface: rgba(255,255,255,.86);
+      --surface-2: rgba(255,255,255,.72);
+      --text: #18181b;
+      --muted: #5b6473;
+      --muted-2: #7c8594;
+      --border: rgba(255,255,255,.38);
+      --shadow: 0 18px 44px rgba(0,0,0,.14);
+      --accent-1: #a21caf;
+      --accent-2: #db2777;
+      --accent-3: #fb7185;
+      --warn: #fbbf24;
+      --danger: #ef4444;
+      --today: #fb923c;
+      --event: #f472b6;
+      --holiday: #60a5fa;
+      --nav-h: 84px;
+      --radius: 24px;
+    }
+    body.dark {
+      --bg: #09090f;
+      --surface: rgba(24,24,31,.84);
+      --surface-2: rgba(39,39,51,.74);
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --muted-2: #8c96a5;
+      --border: rgba(255,255,255,.08);
+      --shadow: 0 18px 42px rgba(0,0,0,.34);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { background-image: linear-gradient(160deg, var(--accent-1), var(--accent-2), var(--accent-3)); transition: background .3s ease, color .3s ease; }
+    #root { min-height: 100vh; }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; border: 0; }
+    .app-shell { max-width: 760px; margin: 0 auto; min-height: 100vh; padding: 14px 14px calc(var(--nav-h) + 18px); }
+    .card { background: var(--surface); backdrop-filter: blur(18px); border: 1px solid var(--border); box-shadow: var(--shadow); border-radius: var(--radius); }
+    .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 8px 0 14px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-icon { width: 46px; height: 46px; border-radius: 16px; display: grid; place-items: center; background: linear-gradient(135deg, var(--accent-1), var(--accent-2), var(--accent-3)); color: white; font-size: 24px; box-shadow: var(--shadow); }
+    .brand h1 { margin: 0; font-size: 1.12rem; }
+    .brand p, .muted { margin: 0; color: var(--muted); font-size: .92rem; }
+    .section-title { font-size: 1.02rem; font-weight: 700; margin: 0 0 10px; }
+    .row { display: flex; gap: 10px; }
+    .row.wrap { flex-wrap: wrap; }
+    .stack { display: flex; flex-direction: column; gap: 10px; }
+    .spacer { flex: 1; }
+    .btn { background: var(--surface-2); color: var(--text); padding: 12px 14px; min-height: 46px; border-radius: 16px; border: 1px solid var(--border); transition: transform .16s ease, background .2s ease, opacity .2s ease; }
+    .btn:active { transform: scale(.98); }
+    .btn-primary { color: white; background: linear-gradient(135deg, var(--accent-1), var(--accent-2), var(--accent-3)); border: 0; }
+    .btn-danger { color: white; background: linear-gradient(135deg, #ef4444, #f97316); border: 0; }
+    .btn-ghost { background: transparent; border: 1px dashed var(--border); }
+    .btn.small { min-height: 38px; padding: 9px 12px; border-radius: 14px; }
+    .input, .textarea { width: 100%; background: rgba(255,255,255,.62); color: var(--text); border: 1px solid rgba(0,0,0,.08); border-radius: 16px; padding: 13px 14px; outline: none; min-height: 46px; }
+    body.dark .input, body.dark .textarea { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.08); }
+    .textarea { min-height: 170px; resize: vertical; }
+    .input:focus, .textarea:focus { box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-1) 30%, transparent); }
+    .auth-wrap { min-height: 100vh; display: grid; place-items: center; padding: 20px; }
+    .auth-card { width: 100%; max-width: 450px; padding: 32px 28px 26px; text-align: center; border-radius: 26px; }
+    .auth-avatar { width: 84px; height: 84px; margin: 0 auto 16px; border-radius: 999px; display: grid; place-items: center; background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); color: white; box-shadow: var(--shadow); overflow: hidden; }
+    .auth-avatar .emoji { font-size: 42px; line-height: 1; transform: translateY(1px); }
+    .auth-main-title { margin: 0; font-size: 2.05rem; font-weight: 800; color: var(--accent-1); }
+    .auth-subtitle { margin: 6px 0 20px; color: var(--muted); font-size: 1.02rem; }
+    .auth-form-section { text-align: left; margin-top: 6px; }
+    .auth-field { margin-bottom: 10px; text-align: left; }
+    .auth-input { border-radius: 14px; min-height: 52px; }
+    .auth-primary { width: 100%; min-height: 50px; font-weight: 700; font-size: 1.02rem; border-radius: 14px; margin-top: 6px; }
+    .auth-secondary-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+    .auth-secondary { min-height: 48px; border-radius: 14px; background: rgba(17,24,39,.08); font-weight: 700; }
+    body.dark .auth-secondary { background: rgba(255,255,255,.08); }
+    .auth-inline-meta { text-align: center; margin-top: 10px; margin-bottom: 4px; font-size: .73rem; color: var(--muted-2); }
+    .auth-inline-error { min-height: 18px; text-align: center; margin-top: 10px; font-size: .82rem; color: #dc2626; font-weight: 600; }
+    body.dark .auth-inline-error { color: #fda4af; }
+    .helper { font-size: .85rem; color: var(--muted); }
+    .calendar-card, .entry-card, .tasks-card, .search-card, .settings-card, .important-card { padding: 14px; }
+    .month-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .month-head h2 { margin: 0; font-size: 1.12rem; }
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+    .weekday { text-align: center; font-size: .78rem; color: var(--muted); padding: 6px 0; }
+    .day-cell { min-height: 92px; border-radius: 18px; padding: 8px; background: var(--surface-2); border: 1px solid transparent; display: flex; flex-direction: column; gap: 6px; justify-content: space-between; overflow: hidden; }
+    .day-cell.outside { opacity: .45; }
+    .day-cell.today { box-shadow: inset 0 0 0 2px var(--today); }
+    .day-cell.selected { border-color: color-mix(in oklab, var(--accent-2) 42%, transparent); }
+    .day-num { font-weight: 800; font-size: 1.18rem; line-height: 1; }
+    .holiday-mini { font-size: .62rem; color: var(--holiday); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .indicators { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .dot { width: 8px; height: 8px; border-radius: 999px; background: white; box-shadow: 0 0 0 1px rgba(0,0,0,.08); }
+    .task-badge, .event-badge, .holiday-badge { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; display: inline-grid; place-items: center; font-size: .72rem; font-weight: 800; }
+    .task-badge { background: var(--warn); color: #27272a; }
+    .event-badge { background: var(--event); color: white; }
+    .holiday-badge { background: var(--holiday); color: white; }
+    .legend { margin-top: 12px; display: flex; gap: 14px; flex-wrap: wrap; color: var(--muted); font-size: .84rem; }
+    .legend-item { display: flex; align-items: center; gap: 7px; }
+    .tasks-inline { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+    .task-pill, .event-pill, .holiday-pill { padding: 10px 12px; border-radius: 16px; border: 1px solid var(--border); }
+    .task-pill { background: color-mix(in oklab, var(--warn) 22%, var(--surface)); border-color: color-mix(in oklab, var(--warn) 30%, transparent); }
+    .event-pill { background: color-mix(in oklab, var(--event) 18%, var(--surface)); border-color: color-mix(in oklab, var(--event) 28%, transparent); }
+    .holiday-pill { background: color-mix(in oklab, var(--holiday) 18%, var(--surface)); border-color: color-mix(in oklab, var(--holiday) 28%, transparent); }
+    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 10px; }
+    .photo-item { position: relative; }
+    .photo-item img { width: 100%; height: 88px; object-fit: cover; border-radius: 16px; border: 1px solid var(--border); }
+    .photo-remove { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; border-radius: 999px; background: rgba(0,0,0,.72); color: white; }
+    .task-list, .search-results, .important-list { display: flex; flex-direction: column; gap: 10px; }
+    .task-card, .search-item, .important-item { padding: 12px; border-radius: 18px; background: var(--surface-2); border: 1px solid var(--border); }
+    .task-card { display: flex; gap: 10px; align-items: flex-start; }
+    .check { width: 22px; height: 22px; margin-top: 2px; }
+    .task-title { font-weight: 700; margin: 0; }
+    .task-title.done { text-decoration: line-through; opacity: .6; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); font-size: .82rem; }
+    .empty { padding: 24px 14px; text-align: center; color: var(--muted); }
+    .nav { position: fixed; left: 50%; transform: translateX(-50%); bottom: max(10px, env(safe-area-inset-bottom)); width: min(760px, calc(100vw - 18px)); padding: 10px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; z-index: 20; background: rgba(255,255,255,.72); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,.35); border-radius: 24px; box-shadow: var(--shadow); }
+    body.dark .nav { background: rgba(18,18,24,.78); border-color: rgba(255,255,255,.08); }
+    .nav-btn { min-height: 56px; border-radius: 18px; background: transparent; color: var(--muted); display: grid; place-items: center; gap: 3px; }
+    .nav-btn.active { color: white; background: linear-gradient(135deg, var(--accent-1), var(--accent-2), var(--accent-3)); }
+    .nav-btn span:first-child { font-size: 1.12rem; }
+    .nav-btn span:last-child { font-size: .68rem; font-weight: 700; }
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: grid; place-items: end center; padding: 12px; z-index: 50; }
+    .modal { width: min(760px, 100%); max-height: min(88vh, 900px); overflow: auto; padding: 14px; border-radius: 24px; }
+    .toast-wrap { position: fixed; top: max(12px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); width: min(440px, calc(100vw - 20px)); display: flex; flex-direction: column; gap: 8px; z-index: 100; }
+    .toast { padding: 12px 14px; color: white; border-radius: 16px; box-shadow: var(--shadow); background: linear-gradient(135deg, rgba(24,24,27,.95), rgba(63,63,70,.95)); }
+    .toast.success { background: linear-gradient(135deg, #16a34a, #10b981); }
+    .toast.error { background: linear-gradient(135deg, #dc2626, #f97316); }
+    .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .theme-btn { height: 52px; border-radius: 18px; border: 2px solid transparent; }
+    .theme-btn.active { border-color: white; box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent-1) 30%, transparent); }
+    .setting-row { display: flex; gap: 12px; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .setting-row:last-child { border-bottom: 0; }
+    .toggle { width: 56px; height: 32px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); padding: 4px; position: relative; }
+    .toggle::after { content: ''; display: block; width: 22px; height: 22px; border-radius: 999px; background: white; transition: transform .2s ease; }
+    .toggle.on { background: linear-gradient(135deg, var(--accent-1), var(--accent-2)); }
+    .toggle.on::after { transform: translateX(24px); }
+    .file-link { display: inline-block; color: var(--accent-1); word-break: break-all; }
+    .divider { height: 1px; background: var(--border); margin: 10px 0; }
+    @media (max-width: 420px) {
+      .auth-main-title { font-size: 1.8rem; }
+      .auth-secondary-row { grid-template-columns: 1fr; }
+      .nav-btn span:last-child { font-size: .62rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script>
+    (() => {
+      const e = React.createElement;
+      const { useEffect, useMemo, useRef, useState } = React;
+      const DB_NAME = 'my-daily-diary-db';
+      const DB_VERSION = 5;
+      const STORE_META = 'meta';
+      const STORE_USERS = 'users';
+      const STORE_ENTRIES = 'entries';
+      const STORE_TASKS = 'tasks';
+      const STORE_SPECIAL = 'specialDays';
+      const HOLIDAY_RESOURCE_ID = 'caaa47de-8626-46a6-aa28-3d948c15c5d9';
+      const DEFAULT_SETTINGS = { theme: 'purple', displayMode: 'auto', reminderEnabled: false, reminderTime: '20:00', biometricEnabled: false, specialDayNotifications: true };
+      const THEMES = { purple: ['#8b5cf6', '#ec4899', '#f97316'], blue: ['#2563eb', '#06b6d4', '#14b8a6'], green: ['#16a34a', '#10b981', '#0d9488'], orange: ['#f97316', '#ef4444', '#ec4899'], pink: ['#ec4899', '#f43f5e', '#8b5cf6'] };
+
+      function openDb() {
+        return new Promise((resolve, reject) => {
+          const req = indexedDB.open(DB_NAME, DB_VERSION);
+          req.onupgradeneeded = () => {
+            const db = req.result;
+            if (!db.objectStoreNames.contains(STORE_META)) db.createObjectStore(STORE_META, { keyPath: 'key' });
+            if (!db.objectStoreNames.contains(STORE_USERS)) db.createObjectStore(STORE_USERS, { keyPath: 'username' });
+            if (!db.objectStoreNames.contains(STORE_ENTRIES)) db.createObjectStore(STORE_ENTRIES, { keyPath: 'id' });
+            if (!db.objectStoreNames.contains(STORE_TASKS)) db.createObjectStore(STORE_TASKS, { keyPath: 'id' });
+            if (!db.objectStoreNames.contains(STORE_SPECIAL)) db.createObjectStore(STORE_SPECIAL, { keyPath: 'id' });
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error || new Error('Unable to open database.'));
+        });
+      }
+      async function withStore(storeName, mode, fn) {
+        const db = await openDb();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(storeName, mode);
+          const store = tx.objectStore(storeName);
+          const result = fn(store, tx);
+          tx.oncomplete = () => resolve(result);
+          tx.onerror = () => reject(tx.error || new Error('Database transaction failed.'));
+          tx.onabort = () => reject(tx.error || new Error('Database transaction aborted.'));
+        });
+      }
+      const dbApi = {
+        async getMeta(key) { const db = await openDb(); return new Promise((resolve, reject) => { const req = db.transaction(STORE_META, 'readonly').objectStore(STORE_META).get(key); req.onsuccess = () => resolve(req.result ? req.result.value : undefined); req.onerror = () => reject(req.error || new Error('Failed to load metadata.')); }); },
+        async setMeta(key, value) { return withStore(STORE_META, 'readwrite', store => store.put({ key, value })); },
+        async getUser(username) { const db = await openDb(); return new Promise((resolve, reject) => { const req = db.transaction(STORE_USERS, 'readonly').objectStore(STORE_USERS).get(username); req.onsuccess = () => resolve(req.result || null); req.onerror = () => reject(req.error || new Error('Failed to load user.')); }); },
+        async listUsers() { const db = await openDb(); return new Promise((resolve, reject) => { const req = db.transaction(STORE_USERS, 'readonly').objectStore(STORE_USERS).getAll(); req.onsuccess = () => resolve(req.result || []); req.onerror = () => reject(req.error || new Error('Failed to load users.')); }); },
+        async setUser(user) { return withStore(STORE_USERS, 'readwrite', store => store.put(user)); },
+        async deleteUser(username) { return withStore(STORE_USERS, 'readwrite', store => store.delete(username)); },
+        async getEntriesByUser(username) { const db = await openDb(); return new Promise((resolve, reject) => { const req = db.transaction(STORE_ENTRIES, 'readonly').objectStore(STORE_ENTRIES).getAll(); req.onsuccess = () => { const out = {}; (req.result || []).filter(item => item.username === username).forEach(item => { out[item.date] = item.data; }); resolve(out); }; req.onerror = () => reject(req.error || new Error('Failed to load entries.')); }); },
+        async setEntry(username, date, data) { return withStore(STORE_ENTRIES, 'readwrite', store => store.put({ id: username + '::' + date, username, date, data })); },
+        async deleteEntry(username, date) { return withStore(STORE_ENTRIES, 'readwrite', store => store.delete(username + '::' + date)); },
+        async getTasksByUser(username) { const db = await openDb(); return new Promise((resolve, reject) => { const req = db.transaction(STORE_TASKS, 'readonly').objectStore(STORE_TASKS).getAll(); req.onsuccess = () => resolve((req.result || []).filter(task => task.username === username)); req.onerror = () => reject(req.error || new Error('Failed to load tasks.')); }); },
+        async setTask(task) { return withStore(STORE_TASKS, 'readwrite', store => store.put(task)); },
+        async deleteTask(id) { return withStore(STORE_TASKS, 'readwrite', store => store.delete(id)); },
+        async getSpecialDaysByUser(username) { const db = await openDb(); return new Promise((resolve, reject) => { const req = db.transaction(STORE_SPECIAL, 'readonly').objectStore(STORE_SPECIAL).getAll(); req.onsuccess = () => resolve((req.result || []).filter(item => item.username === username)); req.onerror = () => reject(req.error || new Error('Failed to load important days.')); }); },
+        async setSpecialDay(item) { return withStore(STORE_SPECIAL, 'readwrite', store => store.put(item)); },
+        async deleteSpecialDay(id) { return withStore(STORE_SPECIAL, 'readwrite', store => store.delete(id)); }
+      };
+
+      function fmtDate(date) { const y = date.getFullYear(); const m = String(date.getMonth() + 1).padStart(2, '0'); const d = String(date.getDate()).padStart(2, '0'); return y + '-' + m + '-' + d; }
+      function parseDateKey(key) { const parts = key.split('-').map(Number); return new Date(parts[0], parts[1] - 1, parts[2]); }
+      function fullDate(key) { return parseDateKey(key).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); }
+      function monthTitle(date) { return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }); }
+      function sha256(text) { return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(buf => Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('')); }
+      function fileToBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => reject(reader.error || new Error('Failed to read file.')); reader.readAsDataURL(file); }); }
+      function downloadJson(name, data) { const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 2000); }
+      function sortTasks(tasks) { return tasks.slice().sort((a, b) => { if (a.completed !== b.completed) return a.completed ? 1 : -1; return (a.dueDate + 'T' + a.dueTime).localeCompare(b.dueDate + 'T' + b.dueTime); }); }
+      function taskCountByDate(tasks) { return tasks.reduce((acc, t) => { acc[t.dueDate] = (acc[t.dueDate] || 0) + (t.completed ? 0 : 1); return acc; }, {}); }
+      function specialCountByDate(items, year) { const out = {}; items.forEach(item => { const key = item.recurring ? year + '-' + item.monthDay : item.date; out[key] = (out[key] || 0) + 1; }); return out; }
+      function eventDateForYear(item, year) { return item.recurring ? year + '-' + item.monthDay : item.date; }
+      function sameMonthDay(dateKey, monthDay) { return dateKey.slice(5) === monthDay; }
+      function isToday(key) { return key === fmtDate(new Date()); }
+      function debounce(fn, ms) { let id; return (...args) => { clearTimeout(id); id = setTimeout(() => fn(...args), ms); }; }
+      function ddmmyyyyToIso(s) { const parts = String(s || '').split('/'); if (parts.length !== 3) return null; return parts[2] + '-' + parts[1].padStart(2, '0') + '-' + parts[0].padStart(2, '0'); }
+      function makeManifest() { const canvas = document.createElement('canvas'); canvas.width = 192; canvas.height = 192; const ctx = canvas.getContext('2d'); const g = ctx.createLinearGradient(0, 0, 192, 192); g.addColorStop(0, '#a21caf'); g.addColorStop(.5, '#db2777'); g.addColorStop(1, '#fb7185'); ctx.fillStyle = g; ctx.fillRect(0, 0, 192, 192); ctx.font = '96px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('📔', 96, 104); const manifest = { name: 'My Daily Diary', short_name: 'Diary', start_url: '.', display: 'standalone', background_color: '#a21caf', theme_color: '#a21caf', icons: [{ src: canvas.toDataURL('image/png'), sizes: '192x192', type: 'image/png' }] }; const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' }); const link = document.createElement('link'); link.rel = 'manifest'; link.href = URL.createObjectURL(blob); document.head.appendChild(link); }
+      makeManifest();
+
+      function Toasts({ toasts }) { return e('div', { className: 'toast-wrap' }, toasts.map(t => e('div', { key: t.id, className: 'toast ' + (t.type || '') }, t.message))); }
+      function Modal({ open, onClose, children }) { if (!open) return null; return e('div', { className: 'modal-backdrop', onClick: onClose }, e('div', { className: 'modal card', onClick: ev => ev.stopPropagation() }, children)); }
+
+      function App() {
+        const todayKey = fmtDate(new Date());
+        const [loading, setLoading] = useState(true);
+        const [authed, setAuthed] = useState(false);
+        const [authMode, setAuthMode] = useState('login');
+        const [authError, setAuthError] = useState('');
+        const [currentUser, setCurrentUser] = useState(null);
+        const [entries, setEntries] = useState({});
+        const [tasks, setTasks] = useState([]);
+        const [specialDays, setSpecialDays] = useState([]);
+        const [holidays, setHolidays] = useState({});
+        const [selectedDate, setSelectedDate] = useState(todayKey);
+        const [monthCursor, setMonthCursor] = useState(new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+        const [tab, setTab] = useState('calendar');
+        const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+        const [taskModal, setTaskModal] = useState({ open: false, mode: 'create', task: null });
+        const [taskDetail, setTaskDetail] = useState(null);
+        const [specialModal, setSpecialModal] = useState({ open: false, mode: 'create', item: null });
+        const [search, setSearch] = useState('');
+        const [toasts, setToasts] = useState([]);
+        const [entryDraft, setEntryDraft] = useState({ text: '', photos: [], timestamp: new Date().toISOString() });
+        const [authForm, setAuthForm] = useState({ username: '', password: '', confirmPassword: '', recoveryAnswer: '', fullName: '' });
+        const [forgotForm, setForgotForm] = useState({ username: '', recoveryAnswer: '', newPassword: '' });
+        const [userCount, setUserCount] = useState(0);
+        const saveEntryDebounced = useRef(null);
+
+        function toast(message, type) { const id = Math.random().toString(36).slice(2); setToasts(v => v.concat([{ id, message, type: type || 'success' }])); setTimeout(() => setToasts(v => v.filter(x => x.id !== id)), 2600); }
+        async function runSafe(action, errorMessage) { try { return await action(); } catch (error) { console.error(error); toast(errorMessage || 'Something went wrong.', 'error'); return null; } }
+        async function refreshUserCount() { await runSafe(async () => { const users = await dbApi.listUsers(); setUserCount(users.length); }, 'Unable to load users.'); }
+        async function loadUserData(username) { return await runSafe(async () => { const user = await dbApi.getUser(username); const userSettings = user && user.settings ? { ...DEFAULT_SETTINGS, ...user.settings } : DEFAULT_SETTINGS; const allEntries = await dbApi.getEntriesByUser(username); const allTasks = await dbApi.getTasksByUser(username); const allSpecial = await dbApi.getSpecialDaysByUser(username); const holidayCache = await dbApi.getMeta('victoriaHolidays'); setCurrentUser(user); setSettings(userSettings); setEntries(allEntries); setTasks(sortTasks(allTasks)); setSpecialDays(allSpecial); setHolidays(holidayCache || {}); setSelectedDate(todayKey); setMonthCursor(new Date(new Date().getFullYear(), new Date().getMonth(), 1)); return true; }, 'Unable to load account data.'); }
+
+        useEffect(() => { runSafe(async () => { await refreshUserCount(); const holidayCache = await dbApi.getMeta('victoriaHolidays'); setHolidays(holidayCache || {}); const sessionUsername = await dbApi.getMeta('sessionUser'); if (sessionUsername) { const ok = await loadUserData(sessionUsername); if (ok) setAuthed(true); } }, 'Unable to restore previous session.').finally(() => setLoading(false)); }, []);
+        useEffect(() => { const hour = new Date().getHours(); const dark = settings.displayMode === 'dark' || (settings.displayMode === 'auto' && (hour < 6 || hour >= 18)); document.body.classList.toggle('dark', dark); const theme = THEMES[settings.theme] || THEMES.purple; document.documentElement.style.setProperty('--accent-1', theme[0]); document.documentElement.style.setProperty('--accent-2', theme[1]); document.documentElement.style.setProperty('--accent-3', theme[2]); }, [settings]);
+        useEffect(() => { const current = entries[selectedDate] || { text: '', photos: [], timestamp: new Date().toISOString() }; setEntryDraft(current); }, [selectedDate, entries]);
+        useEffect(() => { saveEntryDebounced.current = debounce(async (dateKey, draft) => { if (!currentUser) return; const cleaned = { text: (draft.text || '').trim(), photos: draft.photos || [], timestamp: new Date().toISOString() }; if (!cleaned.text && (!cleaned.photos || !cleaned.photos.length)) { setEntries(prev => { const next = { ...prev }; delete next[dateKey]; return next; }); await dbApi.deleteEntry(currentUser.username, dateKey); return; } await dbApi.setEntry(currentUser.username, dateKey, cleaned); setEntries(prev => ({ ...prev, [dateKey]: cleaned })); }, 500); }, [currentUser]);
+
+        async function persistSettings(next) { setSettings(next); if (!currentUser) return; const updatedUser = { ...currentUser, settings: next }; setCurrentUser(updatedUser); await runSafe(() => dbApi.setUser(updatedUser), 'Unable to save settings.'); }
+        async function registerUser() {
+          const username = authForm.username.trim().toLowerCase();
+          setAuthError('');
+          if (!username || username.length < 3) { setAuthError('Username must be at least 3 characters.'); return; }
+          if (!/^[a-z0-9._-]+$/.test(username)) { setAuthError('Only letters, numbers, dots, underscores and dashes are allowed.'); return; }
+          if (authForm.password.length < 4) { setAuthError('Password must be at least 4 characters.'); return; }
+          if (authForm.password !== authForm.confirmPassword) { setAuthError('Passwords do not match.'); return; }
+          if (!authForm.recoveryAnswer.trim()) { setAuthError('Recovery word is required.'); return; }
+          await runSafe(async () => {
+            const existing = await dbApi.getUser(username);
+            if (existing) { setAuthError('That username already exists.'); return; }
+            const passwordHash = await sha256(authForm.password);
+            const recoveryHash = await sha256(authForm.recoveryAnswer.trim().toLowerCase());
+            const user = { username, fullName: authForm.fullName.trim() || username, passwordHash, recoveryQuestion: 'What is your recovery word?', recoveryHash, createdAt: new Date().toISOString(), settings: DEFAULT_SETTINGS };
+            await dbApi.setUser(user);
+            await dbApi.setMeta('sessionUser', username);
+            await refreshUserCount();
+            const ok = await loadUserData(username);
+            if (ok) {
+              setAuthForm({ username: '', password: '', confirmPassword: '', recoveryAnswer: '', fullName: '' });
+              setAuthed(true);
+              setAuthError('');
+              toast('Account created successfully.');
+            }
+          }, 'Unable to create account.');
+        }
+        async function loginUser() {
+          const username = authForm.username.trim().toLowerCase();
+          setAuthError('');
+          if (!username || !authForm.password) { setAuthError('Please enter username and password.'); return; }
+          await runSafe(async () => {
+            const user = await dbApi.getUser(username);
+            if (!user) { setAuthError('User not found.'); return; }
+            const passwordHash = await sha256(authForm.password);
+            if (passwordHash !== user.passwordHash) { setAuthError('Username or password is incorrect.'); return; }
+            await dbApi.setMeta('sessionUser', username);
+            const ok = await loadUserData(username);
+            if (ok) {
+              setAuthed(true);
+              setAuthForm({ username: '', password: '', confirmPassword: '', recoveryAnswer: '', fullName: '' });
+              setAuthError('');
+              toast('Welcome back, ' + user.fullName + '.');
+            }
+          }, 'Unable to log in.');
+        }
+        async function resetPassword() {
+          const username = forgotForm.username.trim().toLowerCase();
+          setAuthError('');
+          if (!username || !forgotForm.recoveryAnswer || forgotForm.newPassword.length < 4) { setAuthError('Enter username, recovery word and a new password.'); return; }
+          await runSafe(async () => {
+            const user = await dbApi.getUser(username);
+            if (!user) { setAuthError('User not found.'); return; }
+            const recoveryHash = await sha256(forgotForm.recoveryAnswer.trim().toLowerCase());
+            if (recoveryHash !== user.recoveryHash) { setAuthError('Recovery word is incorrect.'); return; }
+            const passwordHash = await sha256(forgotForm.newPassword);
+            await dbApi.setUser({ ...user, passwordHash, updatedAt: new Date().toISOString() });
+            setForgotForm({ username: '', recoveryAnswer: '', newPassword: '' });
+            setAuthMode('login');
+            setAuthError('');
+            toast('Password reset successfully.');
+          }, 'Unable to reset password.');
+        }
+        async function handleLogout() { await runSafe(async () => { await dbApi.setMeta('sessionUser', null); setAuthed(false); setCurrentUser(null); setEntries({}); setTasks([]); setSpecialDays([]); setTab('calendar'); setAuthMode('login'); toast('Logged out.'); }, 'Unable to log out.'); }
+        async function maybeBiometricLogin() { if (!window.PublicKeyCredential) return toast('Biometric authentication is not available in this browser.', 'error'); toast('Biometric login is browser-limited in a single-file app.', 'error'); }
+        async function saveTask(task) { if (!currentUser) return; await runSafe(async () => { const finalTask = { ...task, username: currentUser.username }; await dbApi.setTask(finalTask); const exists = tasks.some(t => t.id === finalTask.id); const next = sortTasks(exists ? tasks.map(t => t.id === finalTask.id ? finalTask : t) : tasks.concat([finalTask])); setTasks(next); toast(exists ? 'Task saved.' : 'Task created.'); }, 'Unable to save task.'); }
+        async function toggleTask(task, completed) { await runSafe(async () => { const nextTask = { ...task, completed }; await dbApi.setTask(nextTask); setTasks(sortTasks(tasks.map(t => t.id === task.id ? nextTask : t))); }, 'Unable to update task.'); }
+        async function deleteTask(id) { if (!confirm('Delete this task?')) return; await runSafe(async () => { await dbApi.deleteTask(id); setTasks(sortTasks(tasks.filter(t => t.id !== id))); setTaskDetail(null); setTaskModal({ open: false, mode: 'create', task: null }); toast('Task deleted.'); }, 'Unable to delete task.'); }
+        async function addPhotos(files) { await runSafe(async () => { const encoded = []; for (const f of Array.from(files || [])) encoded.push(await fileToBase64(f)); const next = { ...entryDraft, photos: (entryDraft.photos || []).concat(encoded) }; setEntryDraft(next); if (saveEntryDebounced.current) saveEntryDebounced.current(selectedDate, next); toast('Photos added.'); }, 'Unable to add photos.'); }
+        function updateEntryText(text) { const next = { ...entryDraft, text }; setEntryDraft(next); if (saveEntryDebounced.current) saveEntryDebounced.current(selectedDate, next); }
+        function removePhoto(idx) { const next = { ...entryDraft, photos: entryDraft.photos.filter((_, i) => i !== idx) }; setEntryDraft(next); if (saveEntryDebounced.current) saveEntryDebounced.current(selectedDate, next); toast('Photo removed.'); }
+        async function deleteEntry() { if (!currentUser) return; if (!confirm('Delete this diary entry and all attached photos?')) return; await runSafe(async () => { await dbApi.deleteEntry(currentUser.username, selectedDate); const next = { ...entries }; delete next[selectedDate]; setEntries(next); setEntryDraft({ text: '', photos: [], timestamp: new Date().toISOString() }); toast('Entry deleted.'); }, 'Unable to delete entry.'); }
+        async function exportBackup(target) { if (!currentUser) return; await runSafe(async () => { const payload = { exportedAt: new Date().toISOString(), app: 'My Daily Diary', version: 5, user: currentUser.username, entries, tasks, settings, specialDays, holidays }; const safeTarget = String(target).toLowerCase().split(' ').join('-'); downloadJson('my-daily-diary-' + currentUser.username + '-' + safeTarget + '-backup.json', payload); toast('Backup downloaded for ' + target + '.'); }, 'Unable to export backup.'); }
+        async function importBackup(file) { if (!file || !currentUser) return; await runSafe(async () => { const parsed = JSON.parse(await file.text()); if (!confirm('Restore backup and overwrite current entries, tasks, settings, important days and holiday cache for this user?')) return; for (const date of Object.keys(entries)) await dbApi.deleteEntry(currentUser.username, date); for (const task of tasks) await dbApi.deleteTask(task.id); for (const item of specialDays) await dbApi.deleteSpecialDay(item.id); for (const pair of Object.entries(parsed.entries || {})) await dbApi.setEntry(currentUser.username, pair[0], pair[1]); for (const task of (parsed.tasks || [])) await dbApi.setTask({ ...task, username: currentUser.username }); for (const item of (parsed.specialDays || [])) await dbApi.setSpecialDay({ ...item, username: currentUser.username }); const updatedUser = { ...currentUser, settings: { ...DEFAULT_SETTINGS, ...(parsed.settings || {}) } }; await dbApi.setUser(updatedUser); if (parsed.holidays) { await dbApi.setMeta('victoriaHolidays', parsed.holidays); setHolidays(parsed.holidays); } setCurrentUser(updatedUser); setEntries(parsed.entries || {}); setTasks(sortTasks((parsed.tasks || []).map(t => ({ ...t, username: currentUser.username })))); setSpecialDays((parsed.specialDays || []).map(x => ({ ...x, username: currentUser.username }))); setSettings(updatedUser.settings); toast('Backup restored successfully.'); }, 'Unable to restore backup.'); }
+        async function saveSpecialDay(item) { if (!currentUser) return; await runSafe(async () => { const final = { ...item, username: currentUser.username, notifyHoursBefore: 24 }; await dbApi.setSpecialDay(final); const exists = specialDays.some(x => x.id === final.id); setSpecialDays(exists ? specialDays.map(x => x.id === final.id ? final : x) : specialDays.concat([final])); toast(exists ? 'Important day saved.' : 'Important day added.'); }, 'Unable to save important day.'); }
+        async function deleteSpecialDay(id) { if (!confirm('Delete this important day?')) return; await runSafe(async () => { await dbApi.deleteSpecialDay(id); setSpecialDays(specialDays.filter(x => x.id !== id)); toast('Important day deleted.'); }, 'Unable to delete important day.'); }
+        async function refreshVictoriaHolidays() {
+          await runSafe(async () => {
+            const res = await fetch('https://discover.data.vic.gov.au/api/3/action/datastore_search?resource_id=' + HOLIDAY_RESOURCE_ID + '&limit=5000');
+            if (!res.ok) throw new Error('Network error');
+            const json = await res.json();
+            const records = (((json || {}).result || {}).records || []).filter(r => String(r.dateType || '').toUpperCase().includes('PUBLIC'));
+            const mapped = {};
+            records.forEach(r => {
+              const iso = ddmmyyyyToIso(r.important_date);
+              if (!iso) return;
+              if (!mapped[iso]) mapped[iso] = [];
+              mapped[iso].push({ name: r.name || 'Public Holiday' });
+            });
+            await dbApi.setMeta('victoriaHolidays', mapped);
+            setHolidays(mapped);
+            toast('Victoria public holidays updated.');
+          }, 'Could not update holidays online.');
+        }
+
+        const tasksByDate = useMemo(() => taskCountByDate(tasks), [tasks]);
+        const specialByDate = useMemo(() => specialCountByDate(specialDays, monthCursor.getFullYear()), [specialDays, monthCursor]);
+        const holidayByDate = holidays;
+        const holidayCountByDate = useMemo(() => Object.keys(holidayByDate).reduce((acc, key) => { acc[key] = holidayByDate[key].length; return acc; }, {}), [holidayByDate]);
+        const searchResults = useMemo(() => { const q = search.trim().toLowerCase(); if (!q) return []; return Object.entries(entries).filter(pair => (pair[1].text || '').toLowerCase().includes(q)).sort((a, b) => b[0].localeCompare(a[0])).map(pair => ({ date: pair[0], preview: pair[1].text.slice(0, 120) || '(Photo entry)' })); }, [search, entries]);
+        const dueToday = useMemo(() => sortTasks(tasks.filter(t => t.dueDate === selectedDate)), [tasks, selectedDate]);
+        const specialToday = useMemo(() => specialDays.filter(item => item.recurring ? sameMonthDay(selectedDate, item.monthDay) : item.date === selectedDate), [specialDays, selectedDate]);
+        const holidayToday = holidayByDate[selectedDate] || [];
+        const importantUpcoming = useMemo(() => { const year = new Date().getFullYear(); return specialDays.slice().map(item => { const nextDate = item.recurring ? (eventDateForYear(item, year) < todayKey ? eventDateForYear(item, year + 1) : eventDateForYear(item, year)) : item.date; return { ...item, nextDate }; }).sort((a, b) => a.nextDate.localeCompare(b.nextDate)); }, [specialDays, todayKey]);
+
+        if (loading) return e('div', { className: 'auth-wrap' }, e('div', { className: 'auth-card card' }, e('div', { className: 'auth-avatar' }, e('div', { className: 'emoji' }, '📔')), e('h1', { className: 'auth-main-title' }, 'My Daily Diary'), e('div', { className: 'auth-subtitle' }, 'Loading...')));
+        if (!authed) return e('div', { className: 'auth-wrap' }, e(Toasts, { toasts }), e('div', { className: 'auth-card card' }, e('div', { className: 'auth-avatar' }, e('div', { className: 'emoji' }, '📔')), e('h1', { className: 'auth-main-title' }, 'My Daily Diary'), e('div', { className: 'auth-subtitle' }, authMode === 'login' ? 'Welcome back!' : authMode === 'register' ? 'Create your account' : 'Recover your password'), authMode === 'login' && e('div', { className: 'auth-form-section stack' }, e('div', { className: 'auth-field' }, e('input', { className: 'input auth-input', value: authForm.username, placeholder: 'Username', onChange: ev => { setAuthForm({ ...authForm, username: ev.target.value }); setAuthError(''); } })), e('div', { className: 'auth-field' }, e('input', { className: 'input auth-input', type: 'password', value: authForm.password, placeholder: 'Password', onChange: ev => { setAuthForm({ ...authForm, password: ev.target.value }); setAuthError(''); }, onKeyDown: ev => ev.key === 'Enter' && loginUser() })), e('button', { className: 'btn btn-primary auth-primary', onClick: loginUser }, 'Login'), e('div', { className: 'auth-inline-error' }, authError || ' '), e('div', { className: 'auth-inline-meta' }, userCount + ' registered user' + (userCount === 1 ? '' : 's')), e('div', { className: 'auth-secondary-row' }, e('button', { className: 'btn auth-secondary', onClick: () => { setAuthMode('register'); setAuthError(''); } }, 'Register'), e('button', { className: 'btn auth-secondary', onClick: () => { setAuthMode('forgot'); setAuthError(''); } }, 'Forgot Password'))), authMode === 'register' && e('div', { className: 'auth-form-section stack' }, e('input', { className: 'input auth-input', value: authForm.fullName, placeholder: 'Full name', onChange: ev => { setAuthForm({ ...authForm, fullName: ev.target.value }); setAuthError(''); } }), e('input', { className: 'input auth-input', value: authForm.username, placeholder: 'Username', onChange: ev => { setAuthForm({ ...authForm, username: ev.target.value }); setAuthError(''); } }), e('input', { className: 'input auth-input', type: 'password', value: authForm.password, placeholder: 'Password', onChange: ev => { setAuthForm({ ...authForm, password: ev.target.value }); setAuthError(''); } }), e('input', { className: 'input auth-input', type: 'password', value: authForm.confirmPassword, placeholder: 'Confirm password', onChange: ev => { setAuthForm({ ...authForm, confirmPassword: ev.target.value }); setAuthError(''); } }), e('input', { className: 'input auth-input', value: authForm.recoveryAnswer, placeholder: 'Recovery word', onChange: ev => { setAuthForm({ ...authForm, recoveryAnswer: ev.target.value }); setAuthError(''); } }), e('button', { className: 'btn btn-primary auth-primary', onClick: registerUser }, 'Create Account'), e('div', { className: 'auth-inline-error' }, authError || ' '), e('div', { className: 'auth-inline-meta' }, userCount + ' registered user' + (userCount === 1 ? '' : 's')), e('button', { className: 'btn auth-secondary', onClick: () => { setAuthMode('login'); setAuthError(''); } }, 'Back to Login')), authMode === 'forgot' && e('div', { className: 'auth-form-section stack' }, e('input', { className: 'input auth-input', value: forgotForm.username, placeholder: 'Username', onChange: ev => { setForgotForm({ ...forgotForm, username: ev.target.value }); setAuthError(''); } }), e('input', { className: 'input auth-input', value: forgotForm.recoveryAnswer, placeholder: 'Recovery word', onChange: ev => { setForgotForm({ ...forgotForm, recoveryAnswer: ev.target.value }); setAuthError(''); } }), e('input', { className: 'input auth-input', type: 'password', value: forgotForm.newPassword, placeholder: 'New password', onChange: ev => { setForgotForm({ ...forgotForm, newPassword: ev.target.value }); setAuthError(''); } }), e('button', { className: 'btn btn-primary auth-primary', onClick: resetPassword }, 'Reset Password'), e('div', { className: 'auth-inline-error' }, authError || ' '), e('div', { className: 'auth-inline-meta' }, userCount + ' registered user' + (userCount === 1 ? '' : 's')), e('button', { className: 'btn auth-secondary', onClick: () => { setAuthMode('login'); setAuthError(''); } }, 'Back to Login'))));
+
+        return e(React.Fragment, null,
+          e(Toasts, { toasts }),
+          e('div', { className: 'app-shell' },
+            e('div', { className: 'topbar' },
+              e('div', { className: 'brand' }, e('div', { className: 'brand-icon' }, '📔'), e('div', null, e('h1', null, 'My Daily Diary'), e('p', null, currentUser.fullName + ' · ' + (tab === 'calendar' ? monthTitle(monthCursor) : tab[0].toUpperCase() + tab.slice(1))))),
+              e('button', { className: 'btn small', onClick: () => setSelectedDate(todayKey) }, 'Today')
+            ),
+            tab === 'calendar' && e(CalendarView, { monthCursor, setMonthCursor, selectedDate, setSelectedDate, entries, tasksByDate, specialByDate, holidayByDate, holidayCountByDate, dueToday, specialToday, holidayToday, entryDraft, updateEntryText, addPhotos, removePhoto, deleteEntry, setTaskModal, setTaskDetail, setSpecialModal }),
+            tab === 'tasks' && e(TasksView, { tasks, toggleTask, setTaskModal, setTaskDetail }),
+            tab === 'important' && e(ImportantDaysView, { items: importantUpcoming, setSpecialModal, deleteSpecialDay }),
+            tab === 'search' && e(SearchView, { search, setSearch, results: searchResults, openEntry: date => { setSelectedDate(date); setTab('calendar'); } }),
+            tab === 'settings' && e(SettingsView, { settings, currentUser, setSettings: persistSettings, exportBackup, importBackup, onLogout: handleLogout, onBiometric: maybeBiometricLogin, onRefreshHolidays: refreshVictoriaHolidays, holidaysCount: Object.keys(holidays).length })
+          ),
+          e(BottomNav, { tab, setTab }),
+          e(TaskFormModal, { currentUser, taskModal, onClose: () => setTaskModal({ open: false, mode: 'create', task: null }), onSave: saveTask }),
+          e(TaskDetailModal, { task: taskDetail, onClose: () => setTaskDetail(null), onEdit: task => { setTaskDetail(null); setTaskModal({ open: true, mode: 'edit', task }); }, onDelete: deleteTask }),
+          e(SpecialDayModal, { currentUser, specialModal, onClose: () => setSpecialModal({ open: false, mode: 'create', item: null }), onSave: saveSpecialDay })
+        );
+      }
+
+      function BottomNav({ tab, setTab }) {
+        const items = [['calendar', '📅', 'Calendar'], ['tasks', '✅', 'Tasks'], ['important', '🎉', 'Important'], ['search', '🔎', 'Search'], ['settings', '⚙️', 'Settings']];
+        return e('div', { className: 'nav' }, items.map(item => e('button', { key: item[0], className: 'nav-btn ' + (tab === item[0] ? 'active' : ''), onClick: () => setTab(item[0]) }, e('span', null, item[1]), e('span', null, item[2]))));
+      }
+
+      function CalendarView({ monthCursor, setMonthCursor, selectedDate, setSelectedDate, entries, tasksByDate, specialByDate, holidayByDate, holidayCountByDate, dueToday, specialToday, holidayToday, entryDraft, updateEntryText, addPhotos, removePhoto, deleteEntry, setTaskModal, setTaskDetail, setSpecialModal }) {
+        const first = new Date(monthCursor.getFullYear(), monthCursor.getMonth(), 1);
+        const startOffset = (first.getDay() + 6) % 7;
+        const daysInMonth = new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 0).getDate();
+        const cells = [];
+        for (let i = 0; i < startOffset; i++) { const d = new Date(first); d.setDate(first.getDate() - (startOffset - i)); cells.push({ key: fmtDate(d), day: d.getDate(), outside: true }); }
+        for (let day = 1; day <= daysInMonth; day++) { const d = new Date(monthCursor.getFullYear(), monthCursor.getMonth(), day); cells.push({ key: fmtDate(d), day: day, outside: false }); }
+        while (cells.length % 7 !== 0 || cells.length < 42) { const prev = parseDateKey(cells[cells.length - 1].key); prev.setDate(prev.getDate() + 1); cells.push({ key: fmtDate(prev), day: prev.getDate(), outside: true }); }
+        return e('div', { className: 'stack' },
+          e('div', { className: 'calendar-card card' },
+            e('div', { className: 'month-head' }, e('button', { className: 'btn small', onClick: () => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() - 1, 1)) }, '←'), e('h2', null, monthTitle(monthCursor)), e('div', { className: 'spacer' }), e('button', { className: 'btn small', onClick: () => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1)) }, '→')),
+            e('div', { className: 'calendar-grid' }, ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(d => e('div', { key: d, className: 'weekday' }, d))),
+            e('div', { className: 'calendar-grid' }, cells.map(cell => e('button', { key: cell.key, className: 'day-cell ' + (cell.outside ? 'outside ' : '') + (selectedDate === cell.key ? 'selected ' : '') + (isToday(cell.key) ? 'today' : ''), onClick: () => setSelectedDate(cell.key) }, e('div', { className: 'day-num' }, cell.day), holidayByDate[cell.key] ? e('div', { className: 'holiday-mini' }, holidayByDate[cell.key][0].name) : null, e('div', { className: 'indicators' }, entries[cell.key] ? e('span', { className: 'dot' }) : null, tasksByDate[cell.key] ? e('span', { className: 'task-badge' }, tasksByDate[cell.key]) : null, holidayCountByDate[cell.key] ? e('span', { className: 'holiday-badge' }, holidayCountByDate[cell.key]) : null, specialByDate[cell.key] ? e('span', { className: 'event-badge' }, specialByDate[cell.key]) : null)))),
+            e('div', { className: 'legend' }, e('div', { className: 'legend-item' }, e('span', { className: 'dot' }), 'Diary entry'), e('div', { className: 'legend-item' }, e('span', { className: 'task-badge' }, '2'), 'Tasks'), e('div', { className: 'legend-item' }, e('span', { className: 'holiday-badge' }, '1'), 'Public holiday'), e('div', { className: 'legend-item' }, e('span', { className: 'event-badge' }, '1'), 'Important day'))),
+          e('div', { className: 'entry-card card stack' },
+            e('div', { className: 'row' }, e('div', null, e('div', { className: 'section-title' }, fullDate(selectedDate)), e('div', { className: 'muted' }, 'Your diary entry for this day')), e('div', { className: 'spacer' }), e('button', { className: 'btn small', onClick: () => setTaskModal({ open: true, mode: 'create', task: { dueDate: selectedDate, dueTime: '09:00' } }) }, '+ Task'), e('button', { className: 'btn small', onClick: () => setSpecialModal({ open: true, mode: 'create', item: { date: selectedDate } }) }, '+ Day')),
+            holidayToday.length ? e('div', { className: 'tasks-inline' }, holidayToday.map((h, i) => e('div', { key: i, className: 'holiday-pill' }, 'Public holiday: ' + h.name))) : null,
+            specialToday.length ? e('div', { className: 'tasks-inline' }, specialToday.map(item => e('div', { key: item.id, className: 'event-pill' }, item.type + ': ' + item.title + ' · 24h reminder'))) : null,
+            dueToday.length ? e('div', { className: 'tasks-inline' }, dueToday.map(task => e('button', { key: task.id, className: 'task-pill', onClick: () => setTaskDetail(task) }, (task.completed ? '✓ ' : '• ') + task.title + ' · ' + task.dueTime))) : null,
+            e('textarea', { className: 'textarea', value: entryDraft.text || '', placeholder: 'Write about your day...', onChange: ev => updateEntryText(ev.target.value) }),
+            e('div', { className: 'row wrap' }, e('label', { className: 'btn', style: { display: 'inline-grid', placeItems: 'center' } }, 'Add photos', e('input', { type: 'file', accept: 'image/*', multiple: true, hidden: true, onChange: ev => addPhotos(ev.target.files) })), e('button', { className: 'btn btn-danger', onClick: deleteEntry }, 'Delete entry')),
+            entryDraft.photos && entryDraft.photos.length ? e('div', { className: 'photo-grid' }, entryDraft.photos.map((src, idx) => e('div', { key: idx, className: 'photo-item' }, e('img', { src, alt: 'Photo ' + (idx + 1) }), e('button', { className: 'photo-remove', onClick: () => removePhoto(idx) }, '×')))) : e('div', { className: 'muted' }, 'No photos attached.'))
+        );
+      }
+
+      function TasksView({ tasks, toggleTask, setTaskModal, setTaskDetail }) { return e('div', { className: 'tasks-card card stack' }, e('div', { className: 'row' }, e('div', { className: 'section-title' }, 'Tasks & reminders'), e('div', { className: 'spacer' }), e('button', { className: 'btn btn-primary small', onClick: () => setTaskModal({ open: true, mode: 'create', task: null }) }, '+ New task')), tasks.length ? e('div', { className: 'task-list' }, tasks.map(task => e('div', { key: task.id, className: 'task-card' }, e('input', { className: 'check', type: 'checkbox', checked: !!task.completed, onChange: ev => toggleTask(task, ev.target.checked) }), e('button', { className: 'stack', style: { flex: 1, textAlign: 'left', background: 'transparent', padding: 0 }, onClick: () => setTaskDetail(task) }, e('p', { className: 'task-title ' + (task.completed ? 'done' : '') }, task.title), e('div', { className: 'row wrap' }, e('span', { className: 'chip' }, task.dueDate + ' ' + task.dueTime), task.fileName ? e('span', { className: 'chip' }, task.fileName) : null), task.notes ? e('div', { className: 'muted' }, task.notes.slice(0, 80)) : null)))) : e('div', { className: 'empty' }, 'No tasks yet.')); }
+      function ImportantDaysView({ items, setSpecialModal, deleteSpecialDay }) { return e('div', { className: 'important-card card stack' }, e('div', { className: 'row' }, e('div', { className: 'section-title' }, 'Important days'), e('div', { className: 'spacer' }), e('button', { className: 'btn btn-primary small', onClick: () => setSpecialModal({ open: true, mode: 'create', item: null }) }, '+ Add day')), items.length ? e('div', { className: 'important-list' }, items.map(item => e('div', { key: item.id, className: 'important-item' }, e('div', { className: 'row' }, e('div', null, e('div', { className: 'section-title' }, item.title), e('div', { className: 'muted' }, item.type + ' · ' + item.nextDate + (item.recurring ? ' · repeats yearly' : '') + ' · reminder 24h before')), e('div', { className: 'spacer' }), e('button', { className: 'btn small', onClick: () => setSpecialModal({ open: true, mode: 'edit', item: item }) }, 'Edit'), e('button', { className: 'btn small', onClick: () => deleteSpecialDay(item.id) }, 'Delete')), item.notes ? e('div', { className: 'muted' }, item.notes) : null))) : e('div', { className: 'empty' }, 'No birthdays, anniversaries, or important days yet.')); }
+      function SearchView({ search, setSearch, results, openEntry }) { return e('div', { className: 'search-card card stack' }, e('div', { className: 'section-title' }, 'Search diary entries'), e('input', { className: 'input', value: search, placeholder: 'Search as you type...', onChange: ev => setSearch(ev.target.value) }), !search.trim() ? e('div', { className: 'empty' }, 'Start typing to search through your diary.') : results.length ? e('div', { className: 'search-results' }, results.map(item => e('button', { key: item.date, className: 'search-item', onClick: () => openEntry(item.date) }, e('div', { className: 'section-title', style: { marginBottom: 6 } }, fullDate(item.date)), e('div', { className: 'muted' }, item.preview)))) : e('div', { className: 'empty' }, 'No entries found.')); }
+      function SettingsView({ settings, currentUser, setSettings, exportBackup, importBackup, onLogout, onBiometric, onRefreshHolidays, holidaysCount }) { return e('div', { className: 'settings-card card stack' }, e('div', { className: 'section-title' }, 'Account'), e('div', { className: 'muted' }, currentUser.fullName + ' (@' + currentUser.username + ')'), e('div', { className: 'divider' }), e('div', { className: 'section-title' }, 'Appearance'), e('div', { className: 'theme-grid' }, Object.entries(THEMES).map(pair => e('button', { key: pair[0], className: 'theme-btn ' + (settings.theme === pair[0] ? 'active' : ''), style: { background: 'linear-gradient(135deg, ' + pair[1][0] + ', ' + pair[1][1] + ', ' + pair[1][2] + ')' }, onClick: () => setSettings({ ...settings, theme: pair[0] }) }))), e('div', { className: 'row wrap' }, ['light','dark','auto'].map(mode => e('button', { key: mode, className: 'btn ' + (settings.displayMode === mode ? 'btn-primary' : ''), onClick: () => setSettings({ ...settings, displayMode: mode }) }, mode[0].toUpperCase() + mode.slice(1)))), e('div', { className: 'divider' }), e('div', { className: 'section-title' }, 'Reminders'), e('div', { className: 'setting-row' }, e('div', null, e('div', null, 'Daily reminder'), e('div', { className: 'muted' }, 'Stores your preferred reminder time on this device.')), e('button', { className: 'toggle ' + (settings.reminderEnabled ? 'on' : ''), onClick: () => setSettings({ ...settings, reminderEnabled: !settings.reminderEnabled }) })), e('input', { className: 'input', type: 'time', value: settings.reminderTime, onChange: ev => setSettings({ ...settings, reminderTime: ev.target.value }) }), e('div', { className: 'divider' }), e('div', { className: 'section-title' }, 'Victoria public holidays'), e('div', { className: 'muted' }, holidaysCount + ' holiday dates cached on this device.'), e('button', { className: 'btn', onClick: onRefreshHolidays }, 'Update holidays from internet'), e('div', { className: 'divider' }), e('div', { className: 'section-title' }, 'Backup & restore'), e('div', { className: 'row wrap' }, e('button', { className: 'btn', onClick: () => exportBackup('Google Drive') }, 'Export to Google Drive'), e('button', { className: 'btn', onClick: () => exportBackup('OneDrive') }, 'Export to OneDrive')), e('label', { className: 'btn btn-ghost', style: { display: 'inline-grid', placeItems: 'center' } }, 'Import backup JSON', e('input', { type: 'file', accept: 'application/json', hidden: true, onChange: ev => importBackup(ev.target.files && ev.target.files[0]) })), e('div', { className: 'divider' }), e('button', { className: 'btn', onClick: onBiometric }, 'Fingerprint / biometric options'), e('button', { className: 'btn btn-danger', onClick: onLogout }, 'Logout')); }
+      function TaskFormModal({ currentUser, taskModal, onClose, onSave }) { const seed = taskModal.task || {}; const [form, setForm] = useState({}); useEffect(() => { if (taskModal.open) setForm({ id: seed.id || ((currentUser ? currentUser.username : 'user') + '-' + Date.now()), username: currentUser ? currentUser.username : '', title: seed.title || '', dueDate: seed.dueDate || fmtDate(new Date()), dueTime: seed.dueTime || '09:00', notes: seed.notes || '', file: seed.file || '', fileName: seed.fileName || '', fileType: seed.fileType || '', completed: !!seed.completed, createdAt: seed.createdAt || new Date().toISOString() }); }, [taskModal.open, taskModal.task, currentUser]); async function pickFile(file) { if (!file) return; if (!String(file.type || '').startsWith('image/') && file.type !== 'application/pdf') { alert('Only image or PDF files are supported.'); return; } const file64 = await fileToBase64(file); setForm(prev => ({ ...prev, file: file64, fileName: file.name, fileType: file.type })); } async function submit() { if (!form.title.trim()) return alert('Task title is required.'); if (!form.dueDate || !form.dueTime) return alert('Due date and time are required.'); await onSave(form); onClose(); } return e(Modal, { open: taskModal.open, onClose }, e('div', { className: 'stack' }, e('div', { className: 'section-title' }, taskModal.mode === 'edit' ? 'Edit task' : 'Create task'), e('input', { className: 'input', value: form.title || '', placeholder: 'Task title', onChange: ev => setForm({ ...form, title: ev.target.value }) }), e('div', { className: 'row' }, e('input', { className: 'input', type: 'date', value: form.dueDate || '', onChange: ev => setForm({ ...form, dueDate: ev.target.value }) }), e('input', { className: 'input', type: 'time', value: form.dueTime || '', onChange: ev => setForm({ ...form, dueTime: ev.target.value }) })), e('textarea', { className: 'textarea', style: { minHeight: '110px' }, value: form.notes || '', placeholder: 'Notes or description (optional)', onChange: ev => setForm({ ...form, notes: ev.target.value }) }), e('label', { className: 'btn', style: { display: 'inline-grid', placeItems: 'center' } }, form.fileName || 'Attach PDF or image', e('input', { hidden: true, type: 'file', accept: 'image/*,application/pdf', onChange: ev => pickFile(ev.target.files && ev.target.files[0]) })), e('div', { className: 'row wrap' }, e('button', { className: 'btn btn-primary', onClick: submit }, taskModal.mode === 'edit' ? 'Save changes' : 'Create task'), e('button', { className: 'btn', onClick: onClose }, 'Cancel')))); }
+      function TaskDetailModal({ task, onClose, onEdit, onDelete }) { return e(Modal, { open: !!task, onClose }, task ? e('div', { className: 'stack' }, e('div', { className: 'row' }, e('div', { className: 'section-title' }, task.title), e('div', { className: 'spacer' }), e('span', { className: 'chip' }, task.completed ? 'Completed' : 'Open')), e('div', { className: 'chip' }, task.dueDate + ' ' + task.dueTime), task.notes ? e('div', null, task.notes) : e('div', { className: 'muted' }, 'No notes.'), task.file ? e('div', null, e('div', { className: 'muted' }, 'Attachment: ' + task.fileName), String(task.fileType || '').startsWith('image/') ? e('img', { src: task.file, alt: task.fileName, style: { width: '100%', borderRadius: '18px', border: '1px solid var(--border)' } }) : e('a', { className: 'file-link', href: task.file, download: task.fileName }, 'Download attached PDF')) : null, e('div', { className: 'row wrap' }, e('button', { className: 'btn btn-primary', onClick: () => onEdit(task) }, 'Edit'), e('button', { className: 'btn btn-danger', onClick: () => onDelete(task.id) }, 'Delete'), e('button', { className: 'btn', onClick: onClose }, 'Close'))) : null); }
+      function SpecialDayModal({ currentUser, specialModal, onClose, onSave }) { const seed = specialModal.item || {}; const [form, setForm] = useState({}); useEffect(() => { if (specialModal.open) { const baseDate = seed.originalDate || seed.date || fmtDate(new Date()); setForm({ id: seed.id || ((currentUser ? currentUser.username : 'user') + '-special-' + Date.now()), username: currentUser ? currentUser.username : '', title: seed.title || '', type: seed.type || 'Birthday', recurring: seed.recurring !== false, monthDay: seed.monthDay || baseDate.slice(5), originalDate: baseDate, date: seed.date || baseDate, notes: seed.notes || '', notifyHoursBefore: 24 }); } }, [specialModal.open, specialModal.item, currentUser]); async function submit() { if (!form.title.trim()) return alert('Title is required.'); if (!form.originalDate) return alert('Please choose the actual event date.'); const payload = { ...form, monthDay: form.originalDate.slice(5), date: form.recurring ? form.originalDate : form.date, originalDate: form.originalDate }; if (!payload.recurring && !payload.date) return alert('Date is required.'); await onSave(payload); onClose(); } return e(Modal, { open: specialModal.open, onClose }, e('div', { className: 'stack' }, e('div', { className: 'section-title' }, specialModal.mode === 'edit' ? 'Edit important day' : 'Add important day'), e('input', { className: 'input', value: form.title || '', placeholder: 'Title', onChange: ev => setForm({ ...form, title: ev.target.value }) }), e('div', { className: 'row wrap' }, ['Birthday','Anniversary','Important day'].map(type => e('button', { key: type, className: 'btn ' + (form.type === type ? 'btn-primary' : ''), onClick: () => setForm({ ...form, type: type }) }, type))), e('div', { className: 'setting-row' }, e('div', null, e('div', null, 'Repeat every year'), e('div', { className: 'muted' }, 'Use the real event date below. Year is remembered, while reminders repeat by month and day.')), e('button', { className: 'toggle ' + (form.recurring ? 'on' : ''), onClick: () => setForm({ ...form, recurring: !form.recurring }) })), e('input', { className: 'input', type: 'date', value: form.recurring ? (form.originalDate || '') : (form.date || ''), onChange: ev => setForm(form.recurring ? { ...form, originalDate: ev.target.value, monthDay: ev.target.value ? ev.target.value.slice(5) : form.monthDay } : { ...form, date: ev.target.value, originalDate: ev.target.value }) }), e('div', { className: 'muted' }, form.recurring ? 'This will remind every year on the same month and day, based on the real date you picked.' : 'This will remind once on the exact date you picked.'), e('textarea', { className: 'textarea', style: { minHeight: '100px' }, value: form.notes || '', placeholder: 'Notes (optional)', onChange: ev => setForm({ ...form, notes: ev.target.value }) }), e('div', { className: 'row wrap' }, e('button', { className: 'btn btn-primary', onClick: submit }, specialModal.mode === 'edit' ? 'Save changes' : 'Add reminder'), e('button', { className: 'btn', onClick: onClose }, 'Cancel')))); }
+      ReactDOM.createRoot(document.getElementById('root')).render(e(App));
+    })();
+  </script>
+</body>
+</html>
