@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#9333ea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="My Daily Diary">
+    <title>My Daily Diary</title>
+    
+    <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22My%20Daily%20Diary%22%2C%22short_name%22%3A%22Diary%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23ffffff%22%2C%22theme_color%22%3A%22%239333ea%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%2520width%3D%27192%27%2520height%3D%27192%27%253E%253Crect%2520fill%3D%27%25239333ea%27%2520width%3D%27192%27%2520height%3D%27192%27%2F%253E%253Ctext%2520x%3D%2750%2525%27%2520y%3D%2750%2525%27%2520font-size%3D%2790%27%2520fill%3D%27white%27%2520text-anchor%3D%27middle%27%2520dominant-baseline%3D%27middle%27%253E%25F0%259F%2593%2594%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overscroll-behavior: none;
+            line-height: 1.5;
+        }
+        .hidden { display: none !important; }
+        .min-h-screen { min-height: 100vh; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .items-start { align-items: flex-start; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .flex-col { flex-direction: column; }
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .p-2 { padding: 0.5rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        .p-8 { padding: 2rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .m-0 { margin: 0; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .w-full { width: 100%; }
+        .max-w-md { max-width: 28rem; }
+        .max-w-2xl { max-width: 42rem; }
+        .max-w-4xl { max-width: 56rem; }
+        .grid { display: grid; }
+        .grid-cols-7 { grid-template-columns: repeat(7, 1fr); }
+        .text-center { text-align: center; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .rounded-2xl { border-radius: 1rem; }
+        .rounded-3xl { border-radius: 1.5rem; }
+        .rounded-full { border-radius: 9999px; }
+        .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .fixed { position: fixed; }
+        .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+        .z-50 { z-index: 50; }
+        
+        /* Colors */
+        .text-white { color: white; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-800 { color: #1f2937; }
+        .text-gray-100 { color: #f3f4f6; }
+        .text-gray-400 { color: #9ca3af; }
+        .bg-white { background-color: white; }
+        .bg-gray-800 { background-color: #1f2937; }
+        .bg-gray-700 { background-color: #374151; }
+        .bg-black { background-color: black; }
+        
+        /* Gradients */
+        .bg-gradient-purple { background: linear-gradient(135deg, #a855f7, #ec4899, #fb923c); }
+        .bg-gradient-purple-dark { background: linear-gradient(135deg, #581c87, #831843, #7c2d12); }
+        .bg-gradient-blue { background: linear-gradient(135deg, #3b82f6, #06b6d4, #14b8a6); }
+        .bg-gradient-blue-dark { background: linear-gradient(135deg, #1e3a8a, #164e63, #134e4a); }
+        .bg-gradient-green { background: linear-gradient(135deg, #22c55e, #10b981, #14b8a6); }
+        .bg-gradient-green-dark { background: linear-gradient(135deg, #14532d, #065f46, #134e4a); }
+        .bg-gradient-orange { background: linear-gradient(135deg, #f97316, #ef4444, #ec4899); }
+        .bg-gradient-orange-dark { background: linear-gradient(135deg, #7c2d12, #7f1d1d, #831843); }
+        .bg-gradient-pink { background: linear-gradient(135deg, #ec4899, #f43f5e, #a855f7); }
+        .bg-gradient-pink-dark { background: linear-gradient(135deg, #831843, #881337, #581c87); }
+        .bg-purple-50 { background-color: #faf5ff; }
+        
+        .text-gradient-purple { 
+            background: linear-gradient(135deg, #9333ea, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Buttons */
+        button { 
+            cursor: pointer;
+            border: none;
+            outline: none;
+            font-family: inherit;
+            transition: all 150ms;
+        }
+        .btn { padding: 0.75rem 1rem; border-radius: 0.75rem; font-weight: 600; }
+        .btn-primary { background: linear-gradient(135deg, #9333ea, #ec4899); color: white; }
+        .btn:hover { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        
+        /* Inputs */
+        input, textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        input:focus, textarea:focus { 
+            outline: none;
+            border-color: #9333ea;
+        }
+        input.dark, textarea.dark {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: white;
+        }
+        textarea { resize: none; }
+        
+        /* Calendar */
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            transition: all 150ms;
+        }
+        .calendar-day:hover { transform: scale(1.05); }
+        .calendar-day.has-entry { background: linear-gradient(135deg, #9333ea, #ec4899); color: white; }
+        .calendar-day.today { box-shadow: 0 0 0 2px #fb923c; }
+        .task-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #fbbf24;
+            color: #1f2937;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 1rem;
+        }
+        .modal-content {
+            max-height: 90vh;
+            overflow-y: auto;
+            width: 100%;
+            max-width: 28rem;
+        }
+        
+        /* Icons */
+        svg { flex-shrink: 0; }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    
+    <script>
+        // IndexedDB Storage
+        const DB_NAME = 'MyDailyDiaryDB';
+        const DB_VERSION = 1;
+        let db;
+
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => { db = request.result; resolve(db); };
+                request.onupgradeneeded = (e) => {
+                    db = e.target.result;
+                    if (!db.objectStoreNames.contains('settings')) {
+                        db.createObjectStore('settings', { keyPath: 'key' });
+                    }
+                };
+            });
+        }
+
+        window.storage = {
+            async get(key) {
+                await initDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(['settings'], 'readonly');
+                    const store = tx.objectStore('settings');
+                    const req = store.get(key);
+                    req.onsuccess = () => resolve(req.result ? { key, value: req.result.value } : null);
+                    req.onerror = () => reject(req.error);
+                });
+            },
+            async set(key, value) {
+                await initDB();
+                return new Promise((resolve, reject) => {
+                    const tx = db.transaction(['settings'], 'readwrite');
+                    const store = tx.objectStore('settings');
+                    const req = store.put({ key, value });
+                    req.onsuccess = () => resolve({ key, value });
+                    req.onerror = () => reject(req.error);
+                });
+            }
+        };
+    </script>
+    
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const Icon = ({ d, size = 24 }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {d.map((path, i) => <path key={i} d={path} />)}
+            </svg>
+        );
+
+        const Icons = {
+            Lock: () => <Icon d={["M7 11V7a5 5 0 0 1 10 0v4", "M3 11h18v11H3z"]} />,
+            Calendar: () => <Icon d={["M3 4h18v18H3z", "M16 2v4", "M8 2v4", "M3 10h18"]} />,
+            Search: () => <Icon d={["M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z", "m21 21-4.35-4.35"]} />,
+            Settings: () => <Icon d={["M12 2v4", "M12 18v4", "m4.93 4.93 2.83-2.83", "m16.24 7.76 2.83-2.83"]} />,
+            CheckSquare: () => <Icon d={["m9 11 3 3L22 4", "M21 12v7H5V5h11"]} />,
+            ChevronLeft: () => <Icon d={["m15 18-6-6 6-6"]} />,
+            ChevronRight: () => <Icon d={["m9 18 6-6-6-6"]} />,
+            Save: () => <Icon d={["M19 21H5V5h11l5 5v11z", "M17 21v-8H7v8"]} />,
+            Trash: () => <Icon d={["m3 6h18", "M19 6v14H7V6", "M10 11v6", "M14 11v6"]} />,
+            Upload: () => <Icon d={["M21 15v4H3v-4", "m17 8-5-5-5 5", "M12 3v12"]} />,
+            X: () => <Icon d={["m18 6-12 12", "m6 6 12-12"]} />,
+            Bell: () => <Icon d={["M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"]} />,
+            Cloud: () => <Icon d={["M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"]} />,
+            LogOut: () => <Icon d={["M9 21H5V5h4", "m16 17 5-5-5-5", "M21 12H9"]} />,
+            Edit: () => <Icon d={["M11 4H4v14h14v-7", "M18.5 2.5l3 3L12 15l-4 1 1-4z"]} />
+        };
+
+        const App = () => {
+            const [auth, setAuth] = useState(false);
+            const [firstTime, setFirstTime] = useState(true);
+            const [password, setPassword] = useState('');
+            const [input, setInput] = useState('');
+            const [view, setView] = useState('calendar');
+            const [month, setMonth] = useState(new Date());
+            const [selectedDate, setSelectedDate] = useState(new Date());
+            const [entries, setEntries] = useState({});
+            const [currentEntry, setCurrentEntry] = useState('');
+            const [currentPhotos, setCurrentPhotos] = useState([]);
+            const [tasks, setTasks] = useState([]);
+            const [showTaskModal, setShowTaskModal] = useState(false);
+            const [taskForm, setTaskForm] = useState({ title: '', date: '', time: '', notes: '', file: '' });
+            const [editingTask, setEditingTask] = useState(null);
+            const [viewTask, setViewTask] = useState(null);
+            const [searchQuery, setSearchQuery] = useState('');
+            const [theme, setTheme] = useState('purple');
+            const [darkMode, setDarkMode] = useState('auto');
+            const [isDark, setIsDark] = useState(false);
+            const [showSettings, setShowSettings] = useState(false);
+
+            useEffect(() => {
+                loadData();
+                updateTheme();
+            }, []);
+
+            useEffect(() => { updateTheme(); }, [darkMode]);
+
+            const updateTheme = () => {
+                const hour = new Date().getHours();
+                setIsDark(darkMode === 'dark' || (darkMode === 'auto' && (hour >= 18 || hour < 6)));
+            };
+
+            const loadData = async () => {
+                try {
+                    const p = await storage.get('diary_password');
+                    const e = await storage.get('diary_entries');
+                    const t = await storage.get('diary_tasks');
+                    const th = await storage.get('diary_theme');
+                    const dm = await storage.get('diary_dark_mode');
+                    
+                    if (p) { setPassword(p.value); setFirstTime(false); }
+                    if (e) setEntries(JSON.parse(e.value));
+                    if (t) setTasks(JSON.parse(t.value));
+                    if (th) setTheme(th.value);
+                    if (dm) setDarkMode(dm.value);
+                } catch (err) {
+                    console.log('First time');
+                }
+            };
+
+            const save = async (key, val) => {
+                try { await storage.set(key, val); } catch (e) { console.error(e); }
+            };
+
+            const handleAuth = async () => {
+                if (firstTime) {
+                    if (input.length < 4) return alert('Min 4 characters');
+                    setPassword(input);
+                    await save('diary_password', input);
+                    setFirstTime(false);
+                    setAuth(true);
+                    setInput('');
+                } else {
+                    if (input === password) { setAuth(true); setInput(''); }
+                    else { alert('Wrong password'); setInput(''); }
+                }
+            };
+
+            const formatDate = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+            const getDaysInMonth = (d) => {
+                const y = d.getFullYear(), m = d.getMonth();
+                const first = new Date(y, m, 1);
+                const last = new Date(y, m + 1, 0);
+                return { days: last.getDate(), start: first.getDay() };
+            };
+
+            const selectDate = (day) => {
+                const d = new Date(month.getFullYear(), month.getMonth(), day);
+                setSelectedDate(d);
+                const key = formatDate(d);
+                const e = entries[key];
+                setCurrentEntry(e?.text || '');
+                setCurrentPhotos(e?.photos || []);
+                setView('entry');
+            };
+
+            const saveEntry = async () => {
+                const key = formatDate(selectedDate);
+                const newEntries = { ...entries, [key]: { text: currentEntry, photos: currentPhotos, timestamp: new Date().toISOString() }};
+                setEntries(newEntries);
+                await save('diary_entries', JSON.stringify(newEntries));
+                alert('Saved!');
+            };
+
+            const deleteEntry = async () => {
+                if (!confirm('Delete?')) return;
+                const key = formatDate(selectedDate);
+                const newEntries = { ...entries };
+                delete newEntries[key];
+                setEntries(newEntries);
+                await save('diary_entries', JSON.stringify(newEntries));
+                setCurrentEntry('');
+                setCurrentPhotos([]);
+            };
+
+            const uploadPhoto = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => setCurrentPhotos([...currentPhotos, ev.target.result]);
+                reader.readAsDataURL(file);
+            };
+
+            const removePhoto = (i) => setCurrentPhotos(currentPhotos.filter((_, idx) => idx !== i));
+
+            const saveTask = async () => {
+                if (!taskForm.title || !taskForm.date || !taskForm.time) return alert('Fill required fields');
+                
+                if (editingTask) {
+                    const updated = tasks.map(t => t.id === editingTask.id ? { ...t, ...taskForm } : t);
+                    setTasks(updated);
+                    await save('diary_tasks', JSON.stringify(updated));
+                    alert('Updated!');
+                } else {
+                    const newTask = { id: Date.now().toString(), ...taskForm, completed: false, createdAt: new Date().toISOString() };
+                    const updated = [...tasks, newTask];
+                    setTasks(updated);
+                    await save('diary_tasks', JSON.stringify(updated));
+                    alert('Task created!');
+                }
+                
+                setTaskForm({ title: '', date: '', time: '', notes: '', file: '' });
+                setEditingTask(null);
+                setShowTaskModal(false);
+            };
+
+            const toggleTask = async (id) => {
+                const updated = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+                setTasks(updated);
+                await save('diary_tasks', JSON.stringify(updated));
+            };
+
+            const deleteTask = async (id) => {
+                if (!confirm('Delete task?')) return;
+                const updated = tasks.filter(t => t.id !== id);
+                setTasks(updated);
+                await save('diary_tasks', JSON.stringify(updated));
+            };
+
+            const editTask = (task) => {
+                setEditingTask(task);
+                setTaskForm({ title: task.title, date: task.dueDate, time: task.dueTime, notes: task.notes || '', file: task.file || '' });
+                setShowTaskModal(true);
+            };
+
+            const uploadTaskFile = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => setTaskForm({ ...taskForm, file: ev.target.result, fileName: file.name, fileType: file.type });
+                reader.readAsDataURL(file);
+            };
+
+            const getTasksForDate = (d) => tasks.filter(t => t.dueDate === formatDate(d));
+
+            const searchResults = () => {
+                if (!searchQuery) return [];
+                return Object.keys(entries).filter(k => entries[k].text.toLowerCase().includes(searchQuery.toLowerCase())).map(k => ({ date: k, ...entries[k] }));
+            };
+
+            const exportData = () => {
+                const data = JSON.stringify({ entries, tasks }, null, 2);
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `my-diary-backup-${new Date().toISOString()}.json`;
+                a.click();
+                alert('Downloaded! Upload to Google Drive/OneDrive manually');
+            };
+
+            const importData = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    try {
+                        const data = JSON.parse(ev.target.result);
+                        if (data.entries) { setEntries(data.entries); await save('diary_entries', JSON.stringify(data.entries)); }
+                        if (data.tasks) { setTasks(data.tasks); await save('diary_tasks', JSON.stringify(data.tasks)); }
+                        alert('Restored!');
+                    } catch (err) { alert('Error importing'); }
+                };
+                reader.readAsText(file);
+            };
+
+            const themes = { purple: 'purple', blue: 'blue', green: 'green', orange: 'orange', pink: 'pink' };
+            const bg = isDark ? `bg-gradient-${theme}-dark` : `bg-gradient-${theme}`;
+            const card = isDark ? 'bg-gray-800' : 'bg-white';
+            const txt = isDark ? 'text-gray-100' : 'text-gray-800';
+            const txtMuted = isDark ? 'text-gray-400' : 'text-gray-600';
+
+            if (!auth) {
+                return (
+                    <div className={`min-h-screen ${bg} flex items-center justify-center p-4`}>
+                        <div className={`${card} rounded-3xl shadow-2xl p-8 w-full max-w-md`}>
+                            <div className="text-center mb-6">
+                                <div className="btn-primary w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4" style={{height:'5rem',width:'5rem'}}>
+                                    <Icons.Lock />
+                                </div>
+                                <h1 className="text-3xl font-bold text-gradient-purple">My Daily Diary</h1>
+                                <p className={`${txtMuted} mt-2`}>{firstTime ? 'Create password' : 'Welcome back'}</p>
+                            </div>
+                            <input type="password" placeholder={firstTime ? 'Create password (min 4)' : 'Enter password'} value={input} onChange={e => setInput(e.target.value)} className={`${isDark ? 'dark' : ''} mb-4`} onKeyPress={e => e.key === 'Enter' && handleAuth()} />
+                            <button onClick={handleAuth} className="btn btn-primary w-full">{firstTime ? 'Create' : 'Unlock'}</button>
+                        </div>
+                    </div>
+                );
+            }
+
+            const renderCalendar = () => {
+                const { days, start } = getDaysInMonth(month);
+                const monthName = month.toLocaleString('default', { month: 'long', year: 'numeric' });
+                const dayEls = [];
+                
+                for (let i = 0; i < start; i++) dayEls.push(<div key={`e${i}`} />);
+                for (let i = 1; i <= days; i++) {
+                    const d = new Date(month.getFullYear(), month.getMonth(), i);
+                    const key = formatDate(d);
+                    const hasEntry = entries[key];
+                    const dayTasks = getTasksForDate(d);
+                    const isToday = new Date().toDateString() === d.toDateString();
+                    
+                    dayEls.push(
+                        <div key={i} className="relative">
+                            <div onClick={() => selectDate(i)} className={`calendar-day ${hasEntry ? 'has-entry' : card} ${isToday ? 'today' : ''}`}>
+                                {i}
+                            </div>
+                            {dayTasks.length > 0 && <div className="task-badge">{dayTasks.length}</div>}
+                        </div>
+                    );
+                }
+
+                return (
+                    <div className={`${card} rounded-3xl shadow-xl p-6`}>
+                        <div className="flex items-center justify-between mb-6">
+                            <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth()-1))} className="p-2 rounded-xl"><Icons.ChevronLeft /></button>
+                            <h2 className="text-xl font-bold text-gradient-purple">{monthName}</h2>
+                            <button onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth()+1))} className="p-2 rounded-xl"><Icons.ChevronRight /></button>
+                        </div>
+                        <div className="grid grid-cols-7 gap-2 mb-2">
+                            {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => <div key={d} className={`text-center text-sm font-semibold ${txtMuted}`}>{d}</div>)}
+                        </div>
+                        <div className="grid grid-cols-7 gap-2">{dayEls}</div>
+                    </div>
+                );
+            };
+
+            const renderEntry = () => {
+                const dateStr = selectedDate.toLocaleDateString('default', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                const dayTasks = getTasksForDate(selectedDate);
+
+                return (
+                    <div className={`${card} rounded-3xl shadow-xl p-6 max-w-2xl mx-auto`}>
+                        <div className="flex items-center justify-between mb-6">
+                            <button onClick={() => setView('calendar')} className="p-2"><Icons.ChevronLeft /></button>
+                            <h2 className={`text-lg font-semibold ${txt}`}>{dateStr}</h2>
+                            <div className="flex gap-2">
+                                <button onClick={deleteEntry} className="p-2"><Icons.Trash /></button>
+                                <button onClick={saveEntry} className="p-2"><Icons.Save /></button>
+                            </div>
+                        </div>
+                        
+                        {dayTasks.length > 0 && (
+                            <div className="mb-6">
+                                <h3 className={`text-sm font-semibold ${txt} mb-3 flex items-center gap-2`}><Icons.Bell size={16} />Tasks ({dayTasks.length})</h3>
+                                {dayTasks.map(t => (
+                                    <div key={t.id} onClick={() => setViewTask(t)} className="p-3 mb-2 rounded-xl" style={{background:isDark?'#374151':'#faf5ff',cursor:'pointer'}}>
+                                        <div className="flex items-center gap-2">
+                                            <div style={{width:'8px',height:'8px',borderRadius:'50%',background:t.completed?'#22c55e':'#fbbf24'}} />
+                                            <span className={t.completed ? txtMuted : txt}>{t.title}</span>
+                                            <span className={`ml-auto text-sm ${txtMuted}`}>{t.dueTime}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <textarea value={currentEntry} onChange={e => setCurrentEntry(e.target.value)} placeholder="Write your thoughts..." className={`${isDark?'dark':''} mb-4`} style={{height:'16rem'}} />
+                        
+                        <label className="btn btn-primary w-full mb-4 flex items-center justify-center gap-2">
+                            <Icons.Upload size={20} />Add Photo
+                            <input type="file" accept="image/*" onChange={uploadPhoto} className="hidden" />
+                        </label>
+
+                        {currentPhotos.length > 0 && (
+                            <div className="grid gap-4" style={{gridTemplateColumns:'repeat(2,1fr)'}}>
+                                {currentPhotos.map((p, i) => (
+                                    <div key={i} className="relative group">
+                                        <img src={p} alt="Entry" className="w-full rounded-xl" style={{height:'8rem',objectFit:'cover'}} />
+                                        <button onClick={() => removePhoto(i)} className="absolute" style={{top:'8px',right:'8px',background:'#ef4444',color:'white',padding:'4px',borderRadius:'50%'}}>
+                                            <Icons.X size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            };
+
+            const renderTasks = () => {
+                const sorted = [...tasks].sort((a,b) => a.completed !== b.completed ? (a.completed?1:-1) : new Date(`${a.dueDate} ${a.dueTime}`) - new Date(`${b.dueDate} ${b.dueTime}`));
+
+                return (
+                    <div className={`${card} rounded-3xl shadow-xl p-6 max-w-2xl mx-auto`}>
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-2xl font-bold text-gradient-purple">Tasks</h2>
+                            <button onClick={() => { setEditingTask(null); setTaskForm({ title:'',date:'',time:'',notes:'',file:'' }); setShowTaskModal(true); }} className="btn btn-primary">+ New</button>
+                        </div>
+                        {sorted.length === 0 ? (
+                            <p className={`text-center ${txtMuted} py-8`}>No tasks yet</p>
+                        ) : (
+                            sorted.map(t => (
+                                <div key={t.id} className="p-4 mb-3 rounded-xl" style={{background:isDark?'#374151':'#faf5ff'}}>
+                                    <div className="flex items-start gap-3">
+                                        <button onClick={() => toggleTask(t.id)} style={{width:'24px',height:'24px',borderRadius:'50%',border:'2px solid #9333ea',background:t.completed?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                            {t.completed && <span style={{color:'white',fontSize:'14px'}}>✓</span>}
+                                        </button>
+                                        <div className="flex-1" onClick={() => setViewTask(t)} style={{cursor:'pointer'}}>
+                                            <h3 className={`font-semibold ${t.completed ? txtMuted : txt}`}>{t.title}</h3>
+                                            <p className={`text-sm ${txtMuted}`}>{new Date(t.dueDate).toLocaleDateString()} at {t.dueTime}</p>
+                                        </div>
+                                        <button onClick={() => editTask(t)} className="p-2"><Icons.Edit size={18} /></button>
+                                        <button onClick={() => deleteTask(t.id)} className="p-2"><Icons.Trash size={18} /></button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                );
+            };
+
+            const renderSearch = () => {
+                const results = searchResults();
+
+                return (
+                    <div className={`${card} rounded-3xl shadow-xl p-6 max-w-2xl mx-auto`}>
+                        <h2 className="text-2xl font-bold text-gradient-purple mb-4">Search</h2>
+                        <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search your diary..." className={`${isDark?'dark':''} mb-6`} />
+                        {results.map(r => (
+                            <div key={r.date} className="p-4 mb-3 rounded-xl" style={{background:isDark?'#374151':'#faf5ff'}}>
+                                <div className="font-semibold text-gradient-purple mb-2">{new Date(r.date).toLocaleDateString()}</div>
+                                <p className={txt}>{r.text.substring(0, 150)}...</p>
+                            </div>
+                        ))}
+                        {searchQuery && results.length === 0 && <p className={`text-center ${txtMuted}`}>No entries found</p>}
+                    </div>
+                );
+            };
+
+            const renderSettings = () => (
+                <div className={`${card} rounded-3xl shadow-xl p-6 max-w-2xl mx-auto`}>
+                    <h2 className="text-2xl font-bold text-gradient-purple mb-6">Settings</h2>
+                    
+                    <div className="p-4 mb-4 rounded-xl" style={{background:isDark?'#374151':'#faf5ff'}}>
+                        <p className={`font-semibold ${txt} mb-3`}>Theme</p>
+                        <div className="flex gap-2">
+                            {Object.keys(themes).map(t => (
+                                <button key={t} onClick={async () => { setTheme(t); await save('diary_theme', t); }} className="rounded-xl" style={{width:'3rem',height:'3rem',background:`linear-gradient(135deg, ${t==='purple'?'#a855f7,#ec4899':t==='blue'?'#3b82f6,#06b6d4':t==='green'?'#22c55e,#10b981':t==='orange'?'#f97316,#ef4444':'#ec4899,#f43f5e'})`,border:theme===t?'4px solid white':'none'}} />
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="p-4 mb-4 rounded-xl" style={{background:isDark?'#374151':'#faf5ff'}}>
+                        <p className={`font-semibold ${txt} mb-3`}>Display</p>
+                        <div className="flex gap-2">
+                            {['light','dark','auto'].map(m => (
+                                <button key={m} onClick={async () => { setDarkMode(m); await save('diary_dark_mode', m); }} className="btn" style={{flex:1,background:darkMode===m?'linear-gradient(135deg,#9333ea,#ec4899)':'#e5e7eb',color:darkMode===m?'white':'#1f2937'}}>{m}</button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="p-4 mb-4 rounded-xl" style={{background:isDark?'#374151':'#faf5ff'}}>
+                        <p className={`font-semibold ${txt} mb-3`}>Backup</p>
+                        <button onClick={exportData} className="btn btn-primary w-full mb-2">Export Data</button>
+                        <label className="btn w-full" style={{background:'#e5e7eb',color:'#1f2937',display:'block',textAlign:'center'}}>
+                            Import Backup
+                            <input type="file" accept=".json" onChange={importData} className="hidden" />
+                        </label>
+                    </div>
+
+                    <button onClick={() => setAuth(false)} className="btn w-full" style={{background:'#ef4444',color:'white'}}>
+                        <div className="flex items-center justify-center gap-2"><Icons.LogOut />Logout</div>
+                    </button>
+                </div>
+            );
+
+            return (
+                <div className={`min-h-screen ${bg} p-4`}>
+                    <div className="max-w-4xl mx-auto">
+                        <div className={`${card} rounded-2xl shadow-xl p-4 mb-4`}>
+                            <div className="flex items-center justify-between">
+                                <h1 className="text-2xl font-bold text-gradient-purple">My Daily Diary</h1>
+                                <div className="flex gap-2">
+                                    <button onClick={() => { setView('calendar'); setShowSettings(false); }} className={`p-3 rounded-xl ${view==='calendar'&&!showSettings?'btn-primary':''}`}><Icons.Calendar size={20} /></button>
+                                    <button onClick={() => { setView('tasks'); setShowSettings(false); }} className={`p-3 rounded-xl ${view==='tasks'&&!showSettings?'btn-primary':''}`}><Icons.CheckSquare size={20} /></button>
+                                    <button onClick={() => { setView('search'); setShowSettings(false); }} className={`p-3 rounded-xl ${view==='search'&&!showSettings?'btn-primary':''}`}><Icons.Search size={20} /></button>
+                                    <button onClick={() => setShowSettings(!showSettings)} className={`p-3 rounded-xl ${showSettings?'btn-primary':''}`}><Icons.Settings size={20} /></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {showSettings ? renderSettings() : view === 'calendar' ? renderCalendar() : view === 'tasks' ? renderTasks() : view === 'entry' ? renderEntry() : renderSearch()}
+                    </div>
+
+                    {showTaskModal && (
+                        <div className="modal-backdrop">
+                            <div className={`modal-content ${card} rounded-3xl shadow-2xl p-6`}>
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-2xl font-bold text-gradient-purple">{editingTask ? 'Edit' : 'Create'} Task</h3>
+                                    <button onClick={() => { setShowTaskModal(false); setEditingTask(null); }}><Icons.X /></button>
+                                </div>
+                                <input type="text" placeholder="Task title *" value={taskForm.title} onChange={e => setTaskForm({...taskForm, title: e.target.value})} className={`${isDark?'dark':''} mb-3`} />
+                                <div className="flex gap-2 mb-3">
+                                    <input type="date" value={taskForm.date} onChange={e => setTaskForm({...taskForm, date: e.target.value})} className={isDark?'dark':''} />
+                                    <input type="time" value={taskForm.time} onChange={e => setTaskForm({...taskForm, time: e.target.value})} className={isDark?'dark':''} />
+                                </div>
+                                <textarea placeholder="Notes (optional)" value={taskForm.notes} onChange={e => setTaskForm({...taskForm, notes: e.target.value})} className={`${isDark?'dark':''} mb-3`} style={{height:'6rem'}} />
+                                <label className="btn btn-primary w-full mb-4">
+                                    <Icons.Upload size={20} /> Upload File
+                                    <input type="file" accept=".pdf,image/*" onChange={uploadTaskFile} className="hidden" />
+                                </label>
+                                <button onClick={saveTask} className="btn btn-primary w-full">{editingTask ? 'Update' : 'Create'} Task</button>
+                            </div>
+                        </div>
+                    )}
+
+                    {viewTask && (
+                        <div className="modal-backdrop">
+                            <div className={`modal-content ${card} rounded-3xl shadow-2xl p-6`}>
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-2xl font-bold text-gradient-purple">Task Details</h3>
+                                    <button onClick={() => setViewTask(null)}><Icons.X /></button>
+                                </div>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <button onClick={() => { toggleTask(viewTask.id); setViewTask({...viewTask, completed: !viewTask.completed}); }} style={{width:'24px',height:'24px',borderRadius:'50%',border:'2px solid #9333ea',background:viewTask.completed?'#22c55e':'transparent',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                                        {viewTask.completed && <span style={{color:'white',fontSize:'14px'}}>✓</span>}
+                                    </button>
+                                    <h4 className={`text-xl font-bold ${txt}`}>{viewTask.title}</h4>
+                                </div>
+                                <div className="p-3 mb-4 rounded-xl" style={{background:isDark?'#374151':'#faf5ff'}}>
+                                    <p className={txt}>{new Date(viewTask.dueDate).toLocaleDateString('default',{weekday:'long',year:'numeric',month:'long',day:'numeric'})} at {viewTask.dueTime}</p>
+                                </div>
+                                {viewTask.notes && <div className="p-3 mb-4 rounded-xl" style={{background:isDark?'#374151':'#faf5ff'}}><p className={txt}>{viewTask.notes}</p></div>}
+                                {viewTask.file && <img src={viewTask.file} alt="Attachment" className="w-full rounded-xl mb-4" />}
+                                <div className="flex gap-2">
+                                    <button onClick={() => { setViewTask(null); editTask(viewTask); }} className="btn btn-primary flex-1">Edit</button>
+                                    <button onClick={() => { setViewTask(null); deleteTask(viewTask.id); }} className="btn" style={{background:'#ef4444',color:'white'}}>Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('app')).render(<App />);
+    </script>
+</body>
+</html>
