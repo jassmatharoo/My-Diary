@@ -1,0 +1,939 @@
+import React, { useState, useEffect } from 'react';
+import { Calendar, Search, Settings, Lock, Bell, Cloud, Upload, X, ChevronLeft, ChevronRight, LogOut, Save, Trash2, CheckSquare, Edit, UserPlus, Key } from 'lucide-react';
+
+const MyDailyDiary = () => {
+  // Auth States
+  const [authMode, setAuthMode] = useState('login'); // 'login', 'register', 'forgot'
+  const [currentUser, setCurrentUser] = useState(null);
+  const [users, setUsers] = useState({});
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [securityQuestion, setSecurityQuestion] = useState('');
+  const [securityAnswer, setSecurityAnswer] = useState('');
+  const [forgotUsername, setForgotUsername] = useState('');
+  const [forgotAnswer, setForgotAnswer] = useState('');
+
+  // App States
+  const [currentView, setCurrentView] = useState('calendar');
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [entries, setEntries] = useState({});
+  const [currentEntry, setCurrentEntry] = useState('');
+  const [currentPhotos, setCurrentPhotos] = useState([]);
+  const [tasks, setTasks] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [theme, setTheme] = useState('purple');
+  const [darkMode, setDarkMode] = useState('auto');
+  const [currentDarkMode, setCurrentDarkMode] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  
+  // Task Modal States
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
+  const [viewingTask, setViewingTask] = useState(null);
+  const [taskTitle, setTaskTitle] = useState('');
+  const [taskDueDate, setTaskDueDate] = useState('');
+  const [taskDueTime, setTaskDueTime] = useState('');
+  const [taskNotes, setTaskNotes] = useState('');
+  const [taskFile, setTaskFile] = useState(null);
+  const [taskFilePreview, setTaskFilePreview] = useState('');
+
+  useEffect(() => {
+    loadUsers();
+    updateTheme();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      loadUserData();
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    updateTheme();
+  }, [darkMode]);
+
+  const updateTheme = () => {
+    const hour = new Date().getHours();
+    setCurrentDarkMode(darkMode === 'dark' || (darkMode === 'auto' && (hour >= 18 || hour < 6)));
+  };
+
+  const loadUsers = async () => {
+    try {
+      const storedUsers = await window.storage.get('diary_users');
+      if (storedUsers) {
+        setUsers(JSON.parse(storedUsers.value));
+      }
+    } catch (error) {
+      console.log('No users yet');
+    }
+  };
+
+  const loadUserData = async () => {
+    try {
+      const userDataKey = `diary_data_${currentUser}`;
+      const storedData = await window.storage.get(userDataKey);
+      
+      if (storedData) {
+        const data = JSON.parse(storedData.value);
+        setEntries(data.entries || {});
+        setTasks(data.tasks || []);
+        setTheme(data.theme || 'purple');
+        setDarkMode(data.darkMode || 'auto');
+      }
+    } catch (error) {
+      console.log('New user data');
+    }
+  };
+
+  const saveUserData = async () => {
+    if (!currentUser) return;
+    
+    const userDataKey = `diary_data_${currentUser}`;
+    const data = {
+      entries,
+      tasks,
+      theme,
+      darkMode,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    try {
+      await window.storage.set(userDataKey, JSON.stringify(data));
+    } catch (error) {
+      console.error('Error saving data:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUser) {
+      saveUserData();
+    }
+  }, [entries, tasks, theme, darkMode]);
+
+  const handleRegister = async () => {
+    if (!username || !password || !securityQuestion || !securityAnswer) {
+      alert('Please fill all fields');
+      return;
+    }
+
+    if (password.length < 4) {
+      alert('Password must be at least 4 characters');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      alert('Passwords do not match');
+      return;
+    }
+
+    if (users[username]) {
+      alert('Username already exists');
+      return;
+    }
+
+    const newUsers = {
+      ...users,
+      [username]: {
+        password,
+        securityQuestion,
+        securityAnswer: securityAnswer.toLowerCase(),
+        createdAt: new Date().toISOString()
+      }
+    };
+
+    setUsers(newUsers);
+    await window.storage.set('diary_users', JSON.stringify(newUsers));
+    
+    alert('Account created successfully!');
+    setAuthMode('login');
+    setUsername('');
+    setPassword('');
+    setConfirmPassword('');
+    setSecurityQuestion('');
+    setSecurityAnswer('');
+  };
+
+  const handleLogin = () => {
+    if (!username || !password) {
+      alert('Please enter username and password');
+      return;
+    }
+
+    if (!users[username]) {
+      alert('User not found');
+      return;
+    }
+
+    if (users[username].password !== password) {
+      alert('Incorrect password');
+      return;
+    }
+
+    setCurrentUser(username);
+    setUsername('');
+    setPassword('');
+  };
+
+  const handleForgotPassword = async () => {
+    if (!forgotUsername || !forgotAnswer) {
+      alert('Please fill all fields');
+      return;
+    }
+
+    if (!users[forgotUsername]) {
+      alert('User not found');
+      return;
+    }
+
+    if (users[forgotUsername].securityAnswer !== forgotAnswer.toLowerCase()) {
+      alert('Incorrect answer');
+      return;
+    }
+
+    alert(`Your password is: ${users[forgotUsername].password}`);
+    setAuthMode('login');
+    setForgotUsername('');
+    setForgotAnswer('');
+  };
+
+  const handleLogout = () => {
+    if (confirm('Are you sure you want to logout?')) {
+      setCurrentUser(null);
+      setEntries({});
+      setTasks([]);
+      setCurrentView('calendar');
+    }
+  };
+
+  const getThemeColors = () => {
+    const themes = {
+      purple: {
+        gradient: currentDarkMode ? 'from-purple-900 via-pink-900 to-orange-900' : 'from-purple-500 via-pink-500 to-orange-400',
+        primary: currentDarkMode ? 'purple-400' : 'purple-600',
+        secondary: currentDarkMode ? 'pink-400' : 'pink-600',
+      },
+      blue: {
+        gradient: currentDarkMode ? 'from-blue-900 via-cyan-900 to-teal-900' : 'from-blue-500 via-cyan-500 to-teal-400',
+        primary: currentDarkMode ? 'blue-400' : 'blue-600',
+        secondary: currentDarkMode ? 'cyan-400' : 'cyan-600',
+      },
+      green: {
+        gradient: currentDarkMode ? 'from-green-900 via-emerald-900 to-teal-900' : 'from-green-500 via-emerald-500 to-teal-400',
+        primary: currentDarkMode ? 'green-400' : 'green-600',
+        secondary: currentDarkMode ? 'emerald-400' : 'emerald-600',
+      },
+      orange: {
+        gradient: currentDarkMode ? 'from-orange-900 via-red-900 to-pink-900' : 'from-orange-500 via-red-500 to-pink-400',
+        primary: currentDarkMode ? 'orange-400' : 'orange-600',
+        secondary: currentDarkMode ? 'red-400' : 'red-600',
+      },
+      pink: {
+        gradient: currentDarkMode ? 'from-pink-900 via-rose-900 to-purple-900' : 'from-pink-500 via-rose-500 to-purple-400',
+        primary: currentDarkMode ? 'pink-400' : 'pink-600',
+        secondary: currentDarkMode ? 'rose-400' : 'rose-600',
+      }
+    };
+    return themes[theme];
+  };
+
+  const colors = getThemeColors();
+  const card = currentDarkMode ? 'bg-gray-800' : 'bg-white';
+  const txt = currentDarkMode ? 'text-gray-100' : 'text-gray-800';
+  const txtMuted = currentDarkMode ? 'text-gray-400' : 'text-gray-600';
+  const inputClass = currentDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-200';
+
+  const formatDateKey = (date) => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+
+  const getDaysInMonth = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    return { daysInMonth: lastDay.getDate(), startingDayOfWeek: firstDay.getDay() };
+  };
+
+  const handleDateSelect = (day) => {
+    const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    setSelectedDate(newDate);
+    const dateKey = formatDateKey(newDate);
+    const entry = entries[dateKey];
+    setCurrentEntry(entry?.text || '');
+    setCurrentPhotos(entry?.photos || []);
+    setCurrentView('entry');
+  };
+
+  const handleSaveEntry = async () => {
+    const dateKey = formatDateKey(selectedDate);
+    const newEntries = {
+      ...entries,
+      [dateKey]: {
+        text: currentEntry,
+        photos: currentPhotos,
+        timestamp: new Date().toISOString()
+      }
+    };
+    setEntries(newEntries);
+    alert('Entry saved!');
+  };
+
+  const handleDeleteEntry = () => {
+    if (confirm('Delete this entry?')) {
+      const dateKey = formatDateKey(selectedDate);
+      const newEntries = { ...entries };
+      delete newEntries[dateKey];
+      setEntries(newEntries);
+      setCurrentEntry('');
+      setCurrentPhotos([]);
+    }
+  };
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setCurrentPhotos([...currentPhotos, event.target.result]);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemovePhoto = (index) => {
+    setCurrentPhotos(currentPhotos.filter((_, i) => i !== index));
+  };
+
+  const getTasksForDate = (date) => {
+    const dateKey = formatDateKey(date);
+    return tasks.filter(task => task.dueDate === dateKey);
+  };
+
+  const handleTaskFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setTaskFile(file);
+        setTaskFilePreview(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveTask = () => {
+    if (!taskTitle || !taskDueDate || !taskDueTime) {
+      alert('Please fill required fields');
+      return;
+    }
+
+    if (editingTask) {
+      const updatedTasks = tasks.map(t => 
+        t.id === editingTask.id 
+          ? { ...t, title: taskTitle, dueDate: taskDueDate, dueTime: taskDueTime, notes: taskNotes, file: taskFilePreview || t.file, fileName: taskFile?.name || t.fileName, fileType: taskFile?.type || t.fileType }
+          : t
+      );
+      setTasks(updatedTasks);
+      alert('Task updated!');
+    } else {
+      const newTask = {
+        id: Date.now().toString(),
+        title: taskTitle,
+        dueDate: taskDueDate,
+        dueTime: taskDueTime,
+        notes: taskNotes,
+        file: taskFilePreview,
+        fileName: taskFile?.name || '',
+        fileType: taskFile?.type || '',
+        completed: false,
+        createdAt: new Date().toISOString()
+      };
+      setTasks([...tasks, newTask]);
+      alert('Task created!');
+    }
+
+    setTaskTitle('');
+    setTaskDueDate('');
+    setTaskDueTime('');
+    setTaskNotes('');
+    setTaskFile(null);
+    setTaskFilePreview('');
+    setEditingTask(null);
+    setShowTaskModal(false);
+  };
+
+  const toggleTask = (taskId) => {
+    setTasks(tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t));
+  };
+
+  const deleteTask = (taskId) => {
+    if (confirm('Delete task?')) {
+      setTasks(tasks.filter(t => t.id !== taskId));
+    }
+  };
+
+  const editTask = (task) => {
+    setEditingTask(task);
+    setTaskTitle(task.title);
+    setTaskDueDate(task.dueDate);
+    setTaskDueTime(task.dueTime);
+    setTaskNotes(task.notes || '');
+    setTaskFilePreview(task.file || '');
+    setShowTaskModal(true);
+  };
+
+  const handleExport = () => {
+    const data = JSON.stringify({ entries, tasks }, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `diary-backup-${currentUser}-${new Date().toISOString()}.json`;
+    link.click();
+    alert('Backup downloaded!');
+  };
+
+  const handleImport = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const data = JSON.parse(event.target.result);
+          if (data.entries) setEntries(data.entries);
+          if (data.tasks) setTasks(data.tasks);
+          alert('Data restored!');
+        } catch (err) {
+          alert('Error importing file');
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  // AUTH SCREENS
+  if (!currentUser) {
+    if (authMode === 'register') {
+      return (
+        <div className={`min-h-screen bg-gradient-to-br ${colors.gradient} flex items-center justify-center p-4`}>
+          <div className={`${card} rounded-3xl shadow-2xl p-8 w-full max-w-md`}>
+            <div className="text-center mb-6">
+              <div className={`bg-gradient-to-r from-${colors.primary} to-${colors.secondary} w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4`}>
+                <UserPlus className="text-white" size={40} />
+              </div>
+              <h1 className={`text-3xl font-bold bg-gradient-to-r from-${colors.primary} to-${colors.secondary} bg-clip-text text-transparent`}>Create Account</h1>
+            </div>
+
+            <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} className={`w-full px-4 py-3 border-2 ${inputClass} rounded-xl focus:outline-none mb-3`} />
+            <input type="password" placeholder="Password (min 4 chars)" value={password} onChange={e => setPassword(e.target.value)} className={`w-full px-4 py-3 border-2 ${inputClass} rounded-xl focus:outline-none mb-3`} />
+            <input type="password" placeholder="Confirm Password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className={`w-full px-4 py-3 border-2 ${inputClass} rounded-xl focus:outline-none mb-3`} />
+            
+            <select value={securityQuestion} onChange={e => setSecurityQuestion(e.target.value)} className={`w-full px-4 py-3 border-2 ${inputClass} rounded-xl focus:outline-none mb-3`}>
+              <option value="">Select Security Question</option>
+              <option value="pet">What was your first pet's name?</option>
+              <option value="city">In which city were you born?</option>
+              <option value="school">What was your elementary school name?</option>
+              <option value="food">What is your favorite food?</option>
+            </select>
+            
+            <input type="text" placeholder="Security Answer" value={securityAnswer} onChange={e => setSecurityAnswer(e.target.value)} className={`w-full px-4 py-3 border-2 ${inputClass} rounded-xl focus:outline-none mb-4`} />
+
+            <button onClick={handleRegister} className={`w-full bg-gradient-to-r from-${colors.primary} to-${colors.secondary} text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all mb-3`}>
+              Create Account
+            </button>
+
+            <button onClick={() => setAuthMode('login')} className={`w-full ${currentDarkMode ? 'bg-gray-700' : 'bg-gray-200'} ${txt} py-3 rounded-xl font-semibold transition-all`}>
+              Back to Login
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (authMode === 'forgot') {
+      return (
+        <div className={`min-h-screen bg-gradient-to-br ${colors.gradient} flex items-center justify-center p-4`}>
+          <div className={`${card} rounded-3xl shadow-2xl p-8 w-full max-w-md`}>
+            <div className="text-center mb-6">
+              <div className={`bg-gradient-to-r from-${colors.primary} to-${colors.secondary} w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4`}>
+                <Key className="text-white" size={40} />
+              </div>
+              <h1 className={`text-3xl font-bold bg-gradient-to-r from-${colors.primary} to-${colors.secondary} bg-clip-text text-transparent`}>Forgot Password</h1>
+            </div>
+
+            <input type="text" placeholder="Username" value={forgotUsername} onChange={e => setForgotUsername(e.target.value)} className={`w-full px-4 py-3 border-2 ${inputClass} rounded-xl focus:outline-none mb-3`} />
+            
+            {forgotUsername && users[forgotUsername] && (
+              <>
+                <div className={`p-3 mb-3 rounded-xl ${currentDarkMode ? 'bg-gray-700' : 'bg-purple-50'}`}>
+                  <p className={`text-sm ${txtMuted} mb-2`}>Security Question:</p>
+                  <p className={txt}>{users[forgotUsername].securityQuestion === 'pet' ? "What was your first pet's name?" : users[forgotUsername].securityQuestion === 'city' ? "In which city were you born?" : users[forgotUsername].securityQuestion === 'school' ? "What was your elementary school name?" : "What is your favorite food?"}</p>
+                </div>
+                <input type="text" placeholder="Your Answer" value={forgotAnswer} onChange={e => setForgotAnswer(e.target.value)} className={`w-full px-4 py-3 border-2 ${inputClass} rounded-xl focus:outline-none mb-4`} />
+              </>
+            )}
+
+            <button onClick={handleForgotPassword} className={`w-full bg-gradient-to-r from-${colors.primary} to-${colors.secondary} text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all mb-3`}>
+              Recover Password
+            </button>
+
+            <button onClick={() => setAuthMode('login')} className={`w-full ${currentDarkMode ? 'bg-gray-700' : 'bg-gray-200'} ${txt} py-3 rounded-xl font-semibold transition-all`}>
+              Back to Login
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // LOGIN SCREEN
+    return (
+      <div className={`min-h-screen bg-gradient-to-br ${colors.gradient} flex items-center justify-center p-4`}>
+        <div className={`${card} rounded-3xl shadow-2xl p-8 w-full max-w-md`}>
+          <div className="text-center mb-8">
+            <div className={`bg-gradient-to-r from-${colors.primary} to-${colors.secondary} w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4`}>
+              <Lock className="text-white" size={40} />
+            </div>
+            <h1 className={`text-3xl font-bold bg-gradient-to-r from-${colors.primary} to-${colors.secondary} bg-clip-text text-transparent`}>My Daily Diary</h1>
+            <p className={`${txtMuted} mt-2`}>Welcome back!</p>
+          </div>
+
+          <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} className={`w-full px-4 py-3 border-2 ${inputClass} rounded-xl focus:outline-none mb-3`} onKeyPress={e => e.key === 'Enter' && handleLogin()} />
+          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className={`w-full px-4 py-3 border-2 ${inputClass} rounded-xl focus:outline-none mb-4`} onKeyPress={e => e.key === 'Enter' && handleLogin()} />
+
+          <button onClick={handleLogin} className={`w-full bg-gradient-to-r from-${colors.primary} to-${colors.secondary} text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all mb-3`}>
+            Login
+          </button>
+
+          <div className="flex gap-3">
+            <button onClick={() => setAuthMode('register')} className={`flex-1 ${currentDarkMode ? 'bg-gray-700' : 'bg-gray-200'} ${txt} py-3 rounded-xl font-semibold transition-all`}>
+              Register
+            </button>
+            <button onClick={() => setAuthMode('forgot')} className={`flex-1 ${currentDarkMode ? 'bg-gray-700' : 'bg-gray-200'} ${txt} py-3 rounded-xl font-semibold transition-all`}>
+              Forgot Password
+            </button>
+          </div>
+
+          <p className={`text-center text-xs ${txtMuted} mt-6`}>
+            {Object.keys(users).length} registered user{Object.keys(users).length !== 1 ? 's' : ''}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // CALENDAR VIEW
+  const renderCalendar = () => {
+    const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentMonth);
+    const monthName = currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' });
+    const days = [];
+    
+    for (let i = 0; i < startingDayOfWeek; i++) {
+      days.push(<div key={`empty-${i}`} className="aspect-square" />);
+    }
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+      const dateKey = formatDateKey(date);
+      const hasEntry = entries[dateKey];
+      const dayTasks = getTasksForDate(date);
+      const isToday = new Date().toDateString() === date.toDateString();
+      
+      days.push(
+        <div key={day} className="relative">
+          <button onClick={() => handleDateSelect(day)} className={`w-full aspect-square rounded-xl flex flex-col items-center justify-center font-semibold transition-all relative ${hasEntry ? `bg-gradient-to-br from-${colors.primary} to-${colors.secondary} text-white shadow-md` : `${card} hover:bg-opacity-80`} ${isToday ? 'ring-2 ring-orange-400' : ''}`}>
+            <span>{day}</span>
+            <div className="absolute bottom-1 flex gap-0.5">
+              {hasEntry && <div className="w-1 h-1 bg-white rounded-full" />}
+              {dayTasks.length > 0 && <div className="w-1 h-1 bg-yellow-400 rounded-full" />}
+            </div>
+          </button>
+          {dayTasks.length > 0 && (
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center text-xs font-bold text-gray-900">
+              {dayTasks.length}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div className={`${card} rounded-3xl shadow-xl p-6`}>
+        <div className="flex items-center justify-between mb-6">
+          <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))} className={`p-2 ${currentDarkMode ? 'hover:bg-gray-700' : 'hover:bg-purple-50'} rounded-xl transition-all`}>
+            <ChevronLeft className={`text-${colors.primary}`} />
+          </button>
+          <h2 className={`text-xl font-bold bg-gradient-to-r from-${colors.primary} to-${colors.secondary} bg-clip-text text-transparent`}>{monthName}</h2>
+          <button onClick={() => setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))} className={`p-2 ${currentDarkMode ? 'hover:bg-gray-700' : 'hover:bg-purple-50'} rounded-xl transition-all`}>
+            <ChevronRight className={`text-${colors.primary}`} />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-7 gap-2 mb-2">
+          {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
+            <div key={day} className={`text-center text-sm font-semibold ${txtMuted}`}>{day}</div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7 gap-2">{days}</div>
+
+        <div className="mt-4 flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-white rounded-full border-2 border-gray-300" />
+            <span className={txtMuted}>Diary entry</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 bg-yellow-400 rounded-full" />
+            <span className={txtMuted}>Task due</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ENTRY VIEW
+  const renderEntry = () => {
+    const dateStr = selectedDate.toLocaleDateString('default', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const dayTasks = getTasksForDate(selectedDate);
+
+    return (
+      <div className={`${card} rounded-3xl shadow-xl p-6 max-w-2xl mx-auto`}>
+        <div className="flex items-center justify-between mb-6">
+          <button onClick={() => setCurrentView('calendar')} className={`p-2 ${currentDarkMode ? 'hover:bg-gray-700' : 'hover:bg-purple-50'} rounded-xl`}>
+            <ChevronLeft className={`text-${colors.primary}`} />
+          </button>
+          <h2 className={`text-lg font-semibold ${txt}`}>{dateStr}</h2>
+          <div className="flex gap-2">
+            <button onClick={handleDeleteEntry} className="p-2 hover:bg-red-100 rounded-xl"><Trash2 className="text-red-600" size={20} /></button>
+            <button onClick={handleSaveEntry} className="p-2 hover:bg-green-100 rounded-xl"><Save className="text-green-600" size={20} /></button>
+          </div>
+        </div>
+
+        {dayTasks.length > 0 && (
+          <div className="mb-6">
+            <h3 className={`text-sm font-semibold ${txt} mb-3 flex items-center gap-2`}><Bell size={16} className={`text-${colors.primary}`} />Tasks Due ({dayTasks.length})</h3>
+            <div className="space-y-2">
+              {dayTasks.map(task => (
+                <button key={task.id} onClick={() => setViewingTask(task)} className={`w-full text-left p-3 rounded-xl border-2 transition-all ${task.completed ? (currentDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200') : `bg-gradient-to-r ${currentDarkMode ? 'from-gray-700 to-gray-600 border-gray-500' : `from-${theme}-50 to-${theme === 'pink' ? 'rose' : theme === 'purple' ? 'pink' : theme === 'blue' ? 'cyan' : theme === 'green' ? 'emerald' : 'red'}-50 border-${theme}-200`}`} hover:shadow-md`}>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${task.completed ? 'bg-green-500' : 'bg-yellow-400'}`} />
+                    <span className={`font-semibold ${task.completed ? txtMuted : txt}`}>{task.title}</span>
+                    <span className={`ml-auto text-sm ${txtMuted}`}>{task.dueTime}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <textarea value={currentEntry} onChange={e => setCurrentEntry(e.target.value)} placeholder="Write your thoughts for today..." className={`w-full h-64 p-4 border-2 ${inputClass} rounded-xl focus:outline-none resize-none mb-4`} />
+
+        <label className={`flex items-center gap-2 px-4 py-3 bg-gradient-to-r ${currentDarkMode ? 'from-gray-700 to-gray-600' : `from-${theme}-100 to-${theme === 'pink' ? 'rose' : theme === 'purple' ? 'pink' : theme === 'blue' ? 'cyan' : theme === 'green' ? 'emerald' : 'red'}-100`} rounded-xl cursor-pointer hover:shadow-md transition-all mb-4`}>
+          <Upload className={`text-${colors.primary}`} size={20} />
+          <span className={`text-${colors.primary} font-semibold`}>Add Photo</span>
+          <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
+        </label>
+
+        {currentPhotos.length > 0 && (
+          <div className="grid grid-cols-2 gap-4">
+            {currentPhotos.map((photo, index) => (
+              <div key={index} className="relative group">
+                <img src={photo} alt="Entry" className="w-full h-32 object-cover rounded-xl" />
+                <button onClick={() => handleRemovePhoto(index)} className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-all">
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // TASKS VIEW
+  const renderTasks = () => {
+    const sorted = [...tasks].sort((a,b) => a.completed !== b.completed ? (a.completed ? 1 : -1) : new Date(`${a.dueDate} ${a.dueTime}`) - new Date(`${b.dueDate} ${b.dueTime}`));
+
+    return (
+      <div className={`${card} rounded-3xl shadow-xl p-6 max-w-2xl mx-auto`}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className={`text-2xl font-bold bg-gradient-to-r from-${colors.primary} to-${colors.secondary} bg-clip-text text-transparent`}>Tasks</h2>
+          <button onClick={() => { setEditingTask(null); setTaskTitle(''); setTaskDueDate(''); setTaskDueTime(''); setTaskNotes(''); setTaskFilePreview(''); setShowTaskModal(true); }} className={`px-4 py-2 bg-gradient-to-r from-${colors.primary} to-${colors.secondary} text-white rounded-xl font-semibold hover:shadow-lg`}>
+            + New
+          </button>
+        </div>
+
+        {sorted.length === 0 ? (
+          <p className={`text-center ${txtMuted} py-8`}>No tasks yet</p>
+        ) : (
+          <div className="space-y-3">
+            {sorted.map(task => (
+              <div key={task.id} className={`p-4 rounded-xl border-2 ${task.completed ? (currentDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200') : `bg-gradient-to-r ${currentDarkMode ? 'from-gray-700 to-gray-600 border-gray-500' : `from-${theme}-50 to-${theme === 'pink' ? 'rose' : theme === 'purple' ? 'pink' : theme === 'blue' ? 'cyan' : theme === 'green' ? 'emerald' : 'red'}-50 border-${theme}-200`}`}`}>
+                <div className="flex items-start gap-3">
+                  <button onClick={() => toggleTask(task.id)} className={`mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center ${task.completed ? 'bg-green-500 border-green-500' : `border-${colors.primary}`}`}>
+                    {task.completed && <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
+                  </button>
+                  <div className="flex-1" onClick={() => setViewingTask(task)} style={{cursor:'pointer'}}>
+                    <h3 className={`font-semibold ${task.completed ? txtMuted : txt}`}>{task.title}</h3>
+                    <div className={`flex items-center gap-2 text-sm ${txtMuted} mt-1`}>
+                      <Bell size={14} />
+                      <span>{new Date(task.dueDate).toLocaleDateString()} at {task.dueTime}</span>
+                    </div>
+                    {task.notes && <p className={`text-sm ${txtMuted} mt-2 line-clamp-2`}>{task.notes}</p>}
+                  </div>
+                  <div className="flex gap-1">
+                    <button onClick={() => editTask(task)} className={`p-2 ${currentDarkMode ? 'hover:bg-gray-600' : 'hover:bg-purple-100'} rounded-lg`}>
+                      <Edit className={`text-${colors.primary}`} size={18} />
+                    </button>
+                    <button onClick={() => deleteTask(task.id)} className="p-2 hover:bg-red-100 rounded-lg">
+                      <Trash2 className="text-red-600" size={18} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // SEARCH VIEW
+  const renderSearch = () => {
+    const results = searchQuery ? Object.keys(entries).filter(k => entries[k].text.toLowerCase().includes(searchQuery.toLowerCase())).map(k => ({ date: k, ...entries[k] })) : [];
+
+    return (
+      <div className={`${card} rounded-3xl shadow-xl p-6 max-w-2xl mx-auto`}>
+        <h2 className={`text-2xl font-bold bg-gradient-to-r from-${colors.primary} to-${colors.secondary} bg-clip-text text-transparent mb-4`}>Search</h2>
+        <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search your diary..." className={`w-full px-4 py-3 border-2 ${inputClass} rounded-xl focus:outline-none mb-6`} />
+        
+        <div className="space-y-4">
+          {results.map(r => (
+            <div key={r.date} className={`p-4 bg-gradient-to-r ${currentDarkMode ? 'from-gray-700 to-gray-600' : `from-${theme}-50 to-${theme === 'pink' ? 'rose' : theme === 'purple' ? 'pink' : theme === 'blue' ? 'cyan' : theme === 'green' ? 'emerald' : 'red'}-50`} rounded-xl`}>
+              <div className={`font-semibold text-${colors.primary} mb-2`}>{new Date(r.date).toLocaleDateString('default', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+              <p className={`${txt} line-clamp-3`}>{r.text}</p>
+            </div>
+          ))}
+          {searchQuery && results.length === 0 && <p className={`text-center ${txtMuted}`}>No entries found</p>}
+        </div>
+      </div>
+    );
+  };
+
+  // SETTINGS VIEW
+  const renderSettings = () => (
+    <div className={`${card} rounded-3xl shadow-xl p-6 max-w-2xl mx-auto`}>
+      <h2 className={`text-2xl font-bold bg-gradient-to-r from-${colors.primary} to-${colors.secondary} bg-clip-text text-transparent mb-6`}>Settings</h2>
+
+      <div className="space-y-6">
+        <div className={`p-4 ${currentDarkMode ? 'bg-gray-700' : `bg-${theme}-50`} rounded-xl`}>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-2xl">🎨</span>
+            <span className={`font-semibold ${txt}`}>Color Theme</span>
+          </div>
+          <div className="grid grid-cols-5 gap-2">
+            {['purple', 'blue', 'green', 'orange', 'pink'].map(t => (
+              <button key={t} onClick={() => { setTheme(t); }} className={`h-12 rounded-xl transition-all ${t === 'purple' ? 'bg-gradient-to-br from-purple-500 to-pink-500' : t === 'blue' ? 'bg-gradient-to-br from-blue-500 to-cyan-500' : t === 'green' ? 'bg-gradient-to-br from-green-500 to-emerald-500' : t === 'orange' ? 'bg-gradient-to-br from-orange-500 to-red-500' : 'bg-gradient-to-br from-pink-500 to-rose-500'} ${theme === t ? 'ring-4 ring-white ring-offset-2' : ''}`} />
+            ))}
+          </div>
+        </div>
+
+        <div className={`p-4 ${currentDarkMode ? 'bg-gray-700' : `bg-${theme}-50`} rounded-xl`}>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-2xl">🌓</span>
+            <span className={`font-semibold ${txt}`}>Display Mode</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {['light', 'dark', 'auto'].map(m => (
+              <button key={m} onClick={() => setDarkMode(m)} className={`px-4 py-3 rounded-xl font-semibold ${darkMode === m ? `bg-gradient-to-r from-${colors.primary} to-${colors.secondary} text-white` : `${card} ${txt} border-2 ${currentDarkMode ? 'border-gray-600' : 'border-gray-200'}`}`}>
+                {m === 'light' ? '☀️ Light' : m === 'dark' ? '🌙 Dark' : '🔄 Auto'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className={`p-4 ${currentDarkMode ? 'bg-gray-700' : `bg-${theme}-50`} rounded-xl`}>
+          <div className="flex items-center gap-2 mb-4">
+            <Cloud className={`text-${colors.primary}`} />
+            <span className={`font-semibold ${txt}`}>Backup & Restore</span>
+          </div>
+          <div className="space-y-2">
+            <button onClick={handleExport} className={`w-full px-4 py-3 ${card} border-2 ${currentDarkMode ? 'border-gray-600' : 'border-gray-200'} rounded-xl hover:shadow transition-all font-semibold text-${colors.primary}`}>
+              Export Backup
+            </button>
+            <label className={`block w-full px-4 py-3 bg-gradient-to-r from-${colors.primary} to-${colors.secondary} text-white rounded-xl hover:shadow-lg transition-all font-semibold text-center cursor-pointer`}>
+              Import Backup
+              <input type="file" accept=".json" onChange={handleImport} className="hidden" />
+            </label>
+          </div>
+        </div>
+
+        <div className={`p-3 rounded-xl ${currentDarkMode ? 'bg-gray-700' : 'bg-blue-50'}`}>
+          <p className={`text-sm ${txt}`}>
+            <strong>Logged in as:</strong> {currentUser}
+          </p>
+        </div>
+
+        <button onClick={handleLogout} className="w-full px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:shadow-lg transition-all font-semibold flex items-center justify-center gap-2">
+          <LogOut size={20} />
+          Logout
+        </button>
+      </div>
+    </div>
+  );
+
+  // TASK MODAL
+  const renderTaskModal = () => {
+    if (!showTaskModal) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className={`${card} rounded-3xl shadow-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto`}>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className={`text-2xl font-bold bg-gradient-to-r from-${colors.primary} to-${colors.secondary} bg-clip-text text-transparent`}>
+              {editingTask ? 'Edit Task' : 'Create Task'}
+            </h3>
+            <button onClick={() => { setShowTaskModal(false); setEditingTask(null); }} className={`p-2 ${currentDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded-xl`}>
+              <X className={txtMuted} />
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <input type="text" placeholder="Task Title *" value={taskTitle} onChange={e => setTaskTitle(e.target.value)} className={`w-full px-4 py-3 border-2 ${inputClass} rounded-xl focus:outline-none`} />
+            
+            <div className="grid grid-cols-2 gap-4">
+              <input type="date" value={taskDueDate} onChange={e => setTaskDueDate(e.target.value)} className={`w-full px-4 py-3 border-2 ${inputClass} rounded-xl focus:outline-none`} />
+              <input type="time" value={taskDueTime} onChange={e => setTaskDueTime(e.target.value)} className={`w-full px-4 py-3 border-2 ${inputClass} rounded-xl focus:outline-none`} />
+            </div>
+
+            <textarea placeholder="Notes (optional)" value={taskNotes} onChange={e => setTaskNotes(e.target.value)} className={`w-full px-4 py-3 border-2 ${inputClass} rounded-xl focus:outline-none resize-none h-24`} />
+
+            <label className={`flex items-center gap-2 px-4 py-3 bg-gradient-to-r ${currentDarkMode ? 'from-gray-700 to-gray-600' : `from-${theme}-100 to-${theme === 'pink' ? 'rose' : theme === 'purple' ? 'pink' : theme === 'blue' ? 'cyan' : theme === 'green' ? 'emerald' : 'red'}-100`} rounded-xl cursor-pointer hover:shadow-md`}>
+              <Upload className={`text-${colors.primary}`} size={20} />
+              <span className={`text-${colors.primary} font-semibold`}>{taskFile ? taskFile.name : (editingTask?.fileName || 'Upload File')}</span>
+              <input type="file" accept=".pdf,image/*" onChange={handleTaskFileUpload} className="hidden" />
+            </label>
+
+            {taskFilePreview && (
+              <div className="relative">
+                {(taskFile?.type?.startsWith('image/') || editingTask?.fileType?.startsWith('image/')) ? (
+                  <img src={taskFilePreview} alt="Preview" className="w-full rounded-xl" />
+                ) : (
+                  <div className={`p-4 ${currentDarkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-xl flex items-center gap-2`}>
+                    <Upload className={`text-${colors.primary}`} />
+                    <span>{taskFile?.name || editingTask?.fileName}</span>
+                  </div>
+                )}
+                <button onClick={() => { setTaskFile(null); setTaskFilePreview(''); }} className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600">
+                  <X size={16} />
+                </button>
+              </div>
+            )}
+
+            <button onClick={handleSaveTask} className={`w-full px-4 py-3 bg-gradient-to-r from-${colors.primary} to-${colors.secondary} text-white rounded-xl font-semibold hover:shadow-lg`}>
+              {editingTask ? 'Update Task' : 'Create Task'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // TASK VIEW MODAL
+  const renderTaskViewModal = () => {
+    if (!viewingTask) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className={`${card} rounded-3xl shadow-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto`}>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className={`text-2xl font-bold bg-gradient-to-r from-${colors.primary} to-${colors.secondary} bg-clip-text text-transparent`}>Task Details</h3>
+            <button onClick={() => setViewingTask(null)} className={`p-2 ${currentDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded-xl`}>
+              <X className={txtMuted} />
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <button onClick={() => { toggleTask(viewingTask.id); setViewingTask({...viewingTask, completed: !viewingTask.completed}); }} className={`mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center ${viewingTask.completed ? 'bg-green-500 border-green-500' : `border-${colors.primary}`}`}>
+                {viewingTask.completed && <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>}
+              </button>
+              <h4 className={`text-xl font-bold ${viewingTask.completed ? txtMuted : txt}`}>{viewingTask.title}</h4>
+            </div>
+
+            <div className={`p-3 rounded-xl ${currentDarkMode ? 'bg-gray-700' : `bg-${theme}-50`}`}>
+              <div className="flex items-center gap-2 text-sm">
+                <Bell size={16} className={`text-${colors.primary}`} />
+                <span className={txt}>{new Date(viewingTask.dueDate).toLocaleDateString('default', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              </div>
+              <div className={`text-sm ${txtMuted} ml-6 mt-1`}>Due at {viewingTask.dueTime}</div>
+            </div>
+
+            {viewingTask.notes && (
+              <div className={`p-3 rounded-xl ${currentDarkMode ? 'bg-gray-700' : `bg-${theme}-50`}`}>
+                <p className={`text-sm ${txt}`}>{viewingTask.notes}</p>
+              </div>
+            )}
+
+            {viewingTask.file && (
+              <div>
+                {viewingTask.fileType?.startsWith('image/') ? (
+                  <img src={viewingTask.file} alt="Attachment" className="w-full rounded-xl" />
+                ) : (
+                  <div className={`flex items-center gap-2 p-3 ${currentDarkMode ? 'bg-gray-700' : `bg-${theme}-50`} rounded-xl`}>
+                    <Upload size={20} className={`text-${colors.primary}`} />
+                    <span className={`text-sm font-medium ${txt}`}>{viewingTask.fileName}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex gap-2 pt-4">
+              <button onClick={() => { setViewingTask(null); editTask(viewingTask); }} className={`flex-1 px-4 py-3 bg-gradient-to-r from-${colors.primary} to-${colors.secondary} text-white rounded-xl font-semibold hover:shadow-lg flex items-center justify-center gap-2`}>
+                <Edit size={18} />Edit
+              </button>
+              <button onClick={() => { setViewingTask(null); deleteTask(viewingTask.id); }} className="px-4 py-3 bg-red-500 text-white rounded-xl font-semibold hover:shadow-lg">
+                <Trash2 size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // MAIN APP
+  return (
+    <div className={`min-h-screen bg-gradient-to-br ${colors.gradient} p-4`}>
+      {renderTaskModal()}
+      {renderTaskViewModal()}
+      
+      <div className="max-w-4xl mx-auto">
+        <div className={`${card} rounded-3xl shadow-2xl p-4 mb-4`}>
+          <div className="flex items-center justify-between">
+            <h1 className={`text-2xl font-bold bg-gradient-to-r from-${colors.primary} to-${colors.secondary} bg-clip-text text-transparent`}>My Daily Diary</h1>
+            <div className="flex gap-2">
+              <button onClick={() => { setCurrentView('calendar'); setShowSettings(false); }} className={`p-3 rounded-xl transition-all ${currentView === 'calendar' && !showSettings ? (currentDarkMode ? 'bg-gray-700' : `bg-${theme}-100`) : (currentDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}`}>
+                <Calendar className={currentView === 'calendar' && !showSettings ? `text-${colors.primary}` : txtMuted} size={20} />
+              </button>
+              <button onClick={() => { setCurrentView('tasks'); setShowSettings(false); }} className={`p-3 rounded-xl transition-all ${currentView === 'tasks' && !showSettings ? (currentDarkMode ? 'bg-gray-700' : `bg-${theme}-100`) : (currentDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}`}>
+                <CheckSquare className={currentView === 'tasks' && !showSettings ? `text-${colors.primary}` : txtMuted} size={20} />
+              </button>
+              <button onClick={() => { setCurrentView('search'); setShowSettings(false); }} className={`p-3 rounded-xl transition-all ${currentView === 'search' && !showSettings ? (currentDarkMode ? 'bg-gray-700' : `bg-${theme}-100`) : (currentDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}`}>
+                <Search className={currentView === 'search' && !showSettings ? `text-${colors.primary}` : txtMuted} size={20} />
+              </button>
+              <button onClick={() => setShowSettings(!showSettings)} className={`p-3 rounded-xl transition-all ${showSettings ? (currentDarkMode ? 'bg-gray-700' : `bg-${theme}-100`) : (currentDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100')}`}>
+                <Settings className={showSettings ? `text-${colors.primary}` : txtMuted} size={20} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {showSettings ? renderSettings() : currentView === 'calendar' ? renderCalendar() : currentView === 'tasks' ? renderTasks() : currentView === 'entry' ? renderEntry() : renderSearch()}
+      </div>
+    </div>
+  );
+};
+
+export default MyDailyDiary;
